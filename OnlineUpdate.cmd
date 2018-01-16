@@ -7,5 +7,7 @@ echo Updating OPE Code...
 %~dp0\bin\bin\git.exe remote add ope_origin https://github.com/operepo/ope_laptop_binaries.git
 %~dp0\bin\bin\git.exe pull ope_origin master
 
-echo Update finished!
-pause
+if "%1" NEQ "auto" (
+    echo Git pull finished!
+    pause
+)
