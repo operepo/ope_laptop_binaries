@@ -3,6 +3,6 @@
 cd %~dp0
 
 echo Restoring local GPO settings...
-%~dp0\lgpo.exe /g "%~dp0\..\rc\post_gpo"
+%~dp0lgpo.exe /g "%~dp0rc\post_gpo"
 
 
