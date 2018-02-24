@@ -1,2 +1,5 @@
 /bin/gpo_tmp
 /sshot/sshot.exe.log
+*.qmlc
+*.jsc
+debug.log
