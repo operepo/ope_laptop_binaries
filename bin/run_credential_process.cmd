@@ -31,11 +31,14 @@ echo -- Installing latest OPEService...
 REM TODO
 call %~dp0install_service.cmd 2>NUL 1<NUL
 
+rem apply only gpo firewall rules?
+echo -- Applying firewall settings...
+call %~dp0import_firewall_rules.cmd
+
 echo -- Applying windows group policy...
 call %~dp0restore_gpo.cmd
 
-echo -- Applying firewall rules...
-call %~dp0import_firewall_rules.cmd
+
 
 echo(
 echo(
