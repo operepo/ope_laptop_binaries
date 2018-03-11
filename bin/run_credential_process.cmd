@@ -3,14 +3,16 @@ rem Run credential process... This should be started from the
 rem CredentialLaptop script in the parent folder which switches to
 rem admin mode (e.g. windows UAC prompt)
 
-echo -- Applying pre firewall rules...
-call %~dp0import_firewall_rules.cmd
+echo -- Reset GPO Settings --
+call %~dp0reset_gpo.cmd
+
+echo -- Reset Firewall Settings --
+call %~dp0reset_firewall_rules.cmd
+
 
 rem Make sure vstudio redists are installed
 call %~dp0vcredist_x86.exe /install /quiet
 
-echo -- Applying windows group policy...
-call %~dp0restore_pre_gpo.cmd
 
 echo -- Running Credential App to setup student account and link with Canvas...
 set credential_app="%~dp0..\laptop_credential\credential.exe"
@@ -30,9 +32,9 @@ REM TODO
 call %~dp0install_service.cmd 2>NUL 1<NUL
 
 echo -- Applying windows group policy...
-call %~dp0restore_post_gpo.cmd
+call %~dp0restore_gpo.cmd
 
-echo -- Applying post firewall rules...
+echo -- Applying firewall rules...
 call %~dp0import_firewall_rules.cmd
 
 echo(
