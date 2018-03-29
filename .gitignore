@@ -6,3 +6,4 @@ debug.log
 /lms/debug.log
 /lms/QtQuick/Controls/*.qmlc
 /lms/QtQuick/Controls/Private/*.jsc
+/bin/ca.crt
