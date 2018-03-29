@@ -9,6 +9,8 @@ call %~dp0reset_gpo.cmd
 echo -- Reset Firewall Settings --
 call %~dp0reset_firewall_rules.cmd
 
+echo -- Adding CERT Trusts for OPE Services --
+call %~dp0trust_ope_certs.cmd
 
 rem Make sure vstudio redists are installed
 call %~dp0vcredist_x86.exe /install /quiet
