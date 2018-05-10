@@ -15,6 +15,8 @@ call %~dp0trust_ope_certs.cmd
 rem Make sure vstudio redists are installed
 call %~dp0vcredist_x86.exe /install /quiet
 
+rem Ask if logs should be cleared
+call %~dp0clear_logs.cmd
 
 echo -- Running Credential App to setup student account and link with Canvas...
 set credential_app="%~dp0..\laptop_credential\credential.exe"
@@ -30,7 +32,6 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo -- Installing latest OPEService...
-REM TODO
 call %~dp0install_service.cmd 2>NUL 1<NUL
 
 rem apply only gpo firewall rules?
@@ -44,7 +45,7 @@ call %~dp0restore_gpo.cmd
 
 echo(
 echo(
-echo -- Set an Admin password for this laptop!!!!
+echo ^<ESC^>[91m -- Set an Admin password for this laptop!!!![0m
 echo(
 echo Hit CTRL + ALT + Delete and choose "Change Password"
 echo - This will let you set an admin password for this laptop
@@ -52,7 +53,7 @@ echo - DO NOT USE YOUR NORMAL ADMIN PASSWORD FOR YOUR NETWORK!!
 pause
 echo(
 echo(
-echo -- Are you sure you set the admin password?
+echo ^<ESC^>[101m -- Are you sure you set the admin password?[0m
 pause
 
 
