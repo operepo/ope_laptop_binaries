@@ -2,7 +2,7 @@
 
 set logs_cleared=false
 
-(for /F "usebackq tokens=1*" %%A in (`reg query "HKLM\Software\OPE\OPELMS\LOGS_CLEARED" /ve 2^>nul ^| find "REG_" `) DO (
+(for /F "usebackq tokens=1*" %%A in (`reg query "HKLM\Software\OPE\OPELMS\LOGS_CLEARED" /ve /reg:64 2^>nul ^| find "REG_" `) DO (
     echo Found Value %%A
     echo :: Logs have been cleared!
     set logs_cleared=true
@@ -72,7 +72,7 @@ set bad_devices={53D29EF7-377C-4D14-864B-EB3A85769359} {e0cbf06c-cd8b-4647-bb8a-
 
 
 REM Mark that we have cleared the logs already
-reg add "HKLM\Software\OPE\OPELMS\LOGS_CLEARED" /f 2>nul
+reg add "HKLM\Software\OPE\OPELMS\LOGS_CLEARED" /f /reg:64 2>nul
 
 
 :skipclearlogs
