@@ -27,8 +27,9 @@ REM || exit makes the script stop if the credential fails
 REM %credential_app% || pause && exit /b 1
 IF %ERRORLEVEL% NEQ 0 (
     REM error in credentialing
+    echo "CREDENTIAL APP - FINISHED WITH ERROR!!!"
     pause
-    exit /b %ERRORLEVEL%
+    rem exit /b %ERRORLEVEL%
 )
 
 echo -- Installing latest OPEService...
