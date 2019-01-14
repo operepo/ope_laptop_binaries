@@ -44,24 +44,25 @@ call %~dp0restore_gpo.cmd
 
 
 
-echo(
-echo(
-echo ^<ESC^>[91m -- Set an Admin password for this laptop!!!![0m
-echo(
-echo Hit CTRL + ALT + Delete and choose "Change Password"
-echo - This will let you set an admin password for this laptop
-echo - DO NOT USE YOUR NORMAL ADMIN PASSWORD FOR YOUR NETWORK!!
-pause
-echo(
-echo(
-echo ^<ESC^>[101m -- Are you sure you set the admin password?[0m
-pause
+rem ADMIN PASSWORD SHOULD BE AUTO SET DURING Credential
+rem echo(
+rem echo(
+rem echo [91m -- Set an Admin password for this laptop!!!![0m
+rem echo(
+rem echo Hit CTRL + ALT + Delete and choose "Change Password"
+rem echo - This will let you set an admin password for this laptop
+rem echo - DO NOT USE YOUR NORMAL ADMIN PASSWORD FOR YOUR NETWORK!!
+rem pause
+rem echo(
+rem echo(
+rem echo [101m -- Are you sure you set the admin password?[0m
+rem pause
 
 
-echo Done. 
+rem echo Done. 
 echo(
 echo Make sure to set a unique admin password in the BIOS and disable alternative boot devices.
 echo Student will need to plug in to the secure docking station, login and run the LMS app to download Canvas files.
 pause
-echo -- WARNING - Don't forget to set an admin BIOS password!!!
+echo [91m -- WARNING - Don't forget to set an admin BIOS password!!!
 pause
