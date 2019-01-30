@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtGraphicalEffects.private 1.0
+import QtQuick 2.12
+import QtGraphicalEffects.private 1.12
 
 /*!
     \qmltype GammaAdjust
@@ -159,6 +159,8 @@ luminance = pow(original_luminance, 1.0 / gamma); // The luminance is assumed to
     SourceProxy {
         id: sourceProxy
         input: rootItem.source
+        interpolation: rootItem.smooth || (rootItem.layer.enabled && rootItem.layer.smooth)
+            ? SourceProxy.NearestInterpolation :  SourceProxy.LinearInterpolation
     }
 
     ShaderEffectSource {
