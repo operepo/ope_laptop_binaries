@@ -28,7 +28,7 @@ if "%IsHomeEdition%"=="true") DO (
     if errorlevel 2 goto endcredential
 )
 if "%IsWin10%"=="false") DO (
-    echo [91m -- WARNING Invalid windows edition!!! Credentialing is only designed to run on Win 10 Pro or Enterprise [0m
+    echo [91m -- WARNING Invalid windows edition!!!! Credentialing is only designed to run on Win 10 Pro or Enterprise [0m
     choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
     if errorlevel 2 goto endcredential
 )
