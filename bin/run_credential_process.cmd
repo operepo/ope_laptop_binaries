@@ -42,6 +42,9 @@ call %~dp0import_firewall_rules.cmd
 echo -- Applying windows group policy...
 call %~dp0restore_gpo.cmd
 
+echo -- Locking down boot options...
+call %~dp0lock_down_boot_options.cmd
+
 
 
 rem ADMIN PASSWORD SHOULD BE AUTO SET DURING Credential
