@@ -1,7 +1,62 @@
+@echo off
 
 rem Run credential process... This should be started from the 
 rem CredentialLaptop script in the parent folder which switches to
 rem admin mode (e.g. windows UAC prompt)
+
+REM CHECK FOR COMPATIBLE WINDOWS EDITION
+SET CompatWinInstall=false
+SET IsWin10=false
+SET IsHomeEdition=true
+
+rem See if this is win 10
+FOR /f "usebackq tokens=3,4" %%A in (`reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v ProductName`) DO (
+    echo "--> FOUND %%A %%B"
+    if /I "%%A %%B"=="Windows 10" SET IsWin10=true
+)
+
+rem See if this is Home/Enterprise/Professional
+FOR /f "usebackq tokens=3" %%A in (`reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v EditionID`) DO (
+    echo "--> FOUND %%A"
+    if /I "%%A"=="Enterprise" SET IsHomeEdition=false
+    if /I "%%A"=="Professional" SET IsHomeEdition=false
+)
+
+if "%IsHomeEdition%"=="true") DO (
+    echo [91m -- WARNING Invalid windows edition!!! Credentialing is only designed to run on Win 10 Pro or Enterprise [0m
+    choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
+    if errorlevel 2 goto endcredential
+)
+if "%IsWin10%"=="false") DO (
+    echo [91m -- WARNING Invalid windows edition!!! Credentialing is only designed to run on Win 10 Pro or Enterprise [0m
+    choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
+    if errorlevel 2 goto endcredential
+)
+
+rem CHECK FOR NETWORK CONNECTION
+SET NetAlive=false
+
+FOR /f "usebackq tokens=1" %%A in (`PING -n 2 192.168.77.1`) DO (
+    REM Check the current line for the word reply
+    rem echo "--> %%A"
+    if /I "%%A"=="Reply" SET NetAlive=true
+)
+
+SET OnSyncBox=false
+if "%NetAlive%"=="true" (
+    rem Network up and on the sync box
+    SET OnSyncBox=true
+) ELSE (
+    rem Network not up or not on the sync box
+    SET OnSyncBox=false
+    echo [91m -- WARNING Not plugged into a sync box or network not active!!![0m
+    choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
+    if errorlevel 2 goto endcredential
+)
+
+
+echo "NetAlive: %NetAlive%, IsWin10: %IsWin10%, IsHomeEdition: %IsHomeEdition%"
+goto endcredential
 
 echo -- Reset GPO Settings --
 call %~dp0reset_gpo.cmd
@@ -69,3 +124,5 @@ echo Student will need to plug in to the secure docking station, login and run t
 pause
 echo [91m -- WARNING - Don't forget to set an admin BIOS password!!!
 pause
+
+:endcredential
