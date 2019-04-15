@@ -8,41 +8,48 @@ REM CHECK FOR COMPATIBLE WINDOWS EDITION
 SET CompatWinInstall=false
 SET IsWin10=false
 SET IsHomeEdition=true
+SET NetAlive=false
+SET OnSyncBox=false
 
 rem See if this is win 10
 FOR /f "usebackq tokens=3,4" %%A in (`reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v ProductName`) DO (
-    echo "--> FOUND %%A %%B"
+    rem echo "--> FOUND %%A %%B"
     if /I "%%A %%B"=="Windows 10" SET IsWin10=true
 )
 
 rem See if this is Home/Enterprise/Professional
 FOR /f "usebackq tokens=3" %%A in (`reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v EditionID`) DO (
-    echo "--> FOUND %%A"
+    rem echo "--> FOUND %%A"
     if /I "%%A"=="Enterprise" SET IsHomeEdition=false
     if /I "%%A"=="Professional" SET IsHomeEdition=false
 )
 
-if "%IsHomeEdition%"=="true") DO (
-    echo [91m -- WARNING Invalid windows edition!!! Credentialing is only designed to run on Win 10 Pro or Enterprise [0m
+rem SET IsHomeEdition=true
+rem SET IsWin10=false
+
+if "%IsHomeEdition%"=="true" (
+    echo [91m -- WARNING Win 10 Home Edition Detected!! Credential tool is only designed to run on Win 10 Pro or Enterprise. [0m
     choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
     if errorlevel 2 goto endcredential
 )
-if "%IsWin10%"=="false") DO (
-    echo [91m -- WARNING Invalid windows edition!!!! Credentialing is only designed to run on Win 10 Pro or Enterprise [0m
+if "%IsWin10%"=="false" (
+    echo [91m -- WARNING Invalid Windows Version Detected!! Credential tool is only designed to run on Win 10 Pro or Enterprise. [0m
     choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
     if errorlevel 2 goto endcredential
 )
 
 rem CHECK FOR NETWORK CONNECTION
-SET NetAlive=false
-
-FOR /f "usebackq tokens=1" %%A in (`PING -n 2 192.168.77.1`) DO (
+echo Testing network connection...
+rem DEBUG - An address that should have bad replies
+rem SET PingAddr="192.168.77.1"
+rem PRODUCTION - the main ip for the sync box, if you can't ping this, you aren't plugged in
+SET PingAddr="202.5.222.1"
+FOR /f "usebackq tokens=1" %%A in (`PING -n 2 %PingAddr%`) DO (
     REM Check the current line for the word reply
     rem echo "--> %%A"
     if /I "%%A"=="Reply" SET NetAlive=true
 )
 
-SET OnSyncBox=false
 if "%NetAlive%"=="true" (
     rem Network up and on the sync box
     SET OnSyncBox=true
@@ -55,8 +62,9 @@ if "%NetAlive%"=="true" (
 )
 
 
-echo "NetAlive: %NetAlive%, IsWin10: %IsWin10%, IsHomeEdition: %IsHomeEdition%"
-goto endcredential
+echo NetAlive: %NetAlive%, IsWin10: %IsWin10%, IsHomeEdition: %IsHomeEdition%
+rem DEBUG - Stop script early when debugging
+rem goto endcredential
 
 echo -- Reset GPO Settings --
 call %~dp0reset_gpo.cmd
