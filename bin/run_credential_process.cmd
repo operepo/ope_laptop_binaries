@@ -38,6 +38,9 @@ if "%IsWin10%"=="false" (
     if errorlevel 2 goto endcredential
 )
 
+echo -- Reset GPO Settings --
+call %~dp0reset_gpo.cmd
+
 echo -- Reset Firewall Settings --
 call %~dp0reset_firewall_rules.cmd
 
@@ -68,9 +71,6 @@ if "%NetAlive%"=="true" (
 echo NetAlive: %NetAlive%, IsWin10: %IsWin10%, IsHomeEdition: %IsHomeEdition%
 rem DEBUG - Stop script early when debugging
 rem goto endcredential
-
-echo -- Reset GPO Settings --
-call %~dp0reset_gpo.cmd
 
 echo -- Adding CERT Trusts for OPE Services --
 call %~dp0trust_ope_certs.cmd
