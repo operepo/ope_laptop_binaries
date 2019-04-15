@@ -38,6 +38,9 @@ if "%IsWin10%"=="false" (
     if errorlevel 2 goto endcredential
 )
 
+echo -- Reset Firewall Settings --
+call %~dp0reset_firewall_rules.cmd
+
 rem CHECK FOR NETWORK CONNECTION
 echo Testing network connection...
 rem DEBUG - An address that should have bad replies
@@ -68,9 +71,6 @@ rem goto endcredential
 
 echo -- Reset GPO Settings --
 call %~dp0reset_gpo.cmd
-
-echo -- Reset Firewall Settings --
-call %~dp0reset_firewall_rules.cmd
 
 echo -- Adding CERT Trusts for OPE Services --
 call %~dp0trust_ope_certs.cmd
