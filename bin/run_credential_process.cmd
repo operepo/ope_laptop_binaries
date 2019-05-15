@@ -77,9 +77,11 @@ echo -- Adding CERT Trusts for OPE Services --
 call %~dp0trust_ope_certs.cmd
 
 rem Make sure vstudio redists are installed
+echo "Installing required packages..."
 call %~dp0vcredist_x86.exe /install /quiet
 call %~dp0vc_redist.x64_15_to_19.exe /install /quiet
 call %~dp0vc_redist.x86_15_to_19.exe /install /quiet
+call %~dp0Win64OpenSSL_Light-1_1_1b.exe /verysilent
 
 
 rem Ask if logs should be cleared
