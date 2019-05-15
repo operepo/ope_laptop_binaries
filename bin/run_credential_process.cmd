@@ -22,6 +22,7 @@ FOR /f "usebackq tokens=3" %%A in (`reg query "HKLM\SOFTWARE\Microsoft\Windows N
     rem echo "--> FOUND %%A"
     if /I "%%A"=="Enterprise" SET IsHomeEdition=false
     if /I "%%A"=="Professional" SET IsHomeEdition=false
+	if /I "%%A"=="Education" SET IsHomeEdition=false
 )
 
 rem SET IsHomeEdition=true
@@ -77,6 +78,9 @@ call %~dp0trust_ope_certs.cmd
 
 rem Make sure vstudio redists are installed
 call %~dp0vcredist_x86.exe /install /quiet
+call %~dp0vc_redist.x64_15_to_19.exe /install /quiet
+call %~dp0vc_redist.x86_15_to_19.exe /install /quiet
+
 
 rem Ask if logs should be cleared
 call %~dp0clear_logs.cmd
