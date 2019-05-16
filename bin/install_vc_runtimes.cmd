@@ -1,8 +1,8 @@
 @echo off
 
 echo ----> Installing MSVC Runtimes - 2005...
-call %~dp0vcredist_x64_2005.exe /install /quiet
-call %~dp0vcredist_x86_2005.exe /install /quiet
+call %~dp0vcredist_x64_2005.exe /q
+call %~dp0vcredist_x86_2005.exe /q
 
 
 echo ----> Installing MSVC Runtimes - 2008...
