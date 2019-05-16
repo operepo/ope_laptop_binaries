@@ -78,32 +78,7 @@ call %~dp0trust_ope_certs.cmd
 
 rem Make sure vstudio redists are installed
 echo -- Installing required packages --
-echo - Installing MSVC Runtimes - 2008...
-call %~dp0vcredist_x64_2008.exe /install /quiet
-call %~dp0vcredist_x86_2008.exe /install /quiet
-
-echo - Installing MSVC Runtimes - 2010...
-rem call %~dp0vcredist_x64_2010.exe /install /quiet
-rem call %~dp0vcredist_x86_2010.exe /install /quiet
-
-echo - Installing MSVC Runtimes - 2012...
-rem call %~dp0vcredist_x64_2012.exe /install /quiet
-rem call %~dp0vcredist_x86_2012.exe /install /quiet
-
-echo - Installing MSVC Runtimes - 2013...
-call %~dp0vcredist_x64_2013.exe /install /quiet
-call %~dp0vcredist_x86_2013.exe /install /quiet
-
-echo - Installing MSVC Runtimes - 2015 to 2019...
-call %~dp0vc_redist.x64_15_to_19.exe /install /quiet
-call %~dp0vc_redist.x86_15_to_19.exe /install /quiet
-
-echo - Installing MSVC Runtimes - LMS redist...
-call %~dp0..\lms\vc_redist.x64.exe /install /quiet
-
-rem call %~dp0Win64OpenSSL_Light-1_1_1b.exe /silent /allusers /nocancel /norestart /closeapplications /restartapplications /noicons
-rem  /verysilent
-
+call %~dp0install_vc_runtimes.cmd
 
 rem Ask if logs should be cleared
 call %~dp0clear_logs.cmd
@@ -140,7 +115,7 @@ call %~dp0lock_down_boot_options.cmd
 rem ADMIN PASSWORD SHOULD BE AUTO SET DURING Credential
 rem echo(
 rem echo(
-rem echo [91m -- Set an Admin password for this laptop!!!![0m
+rem echo [91m -- Set an Admin password for this laptop!!!![0m
 rem echo(
 rem echo Hit CTRL + ALT + Delete and choose "Change Password"
 rem echo - This will let you set an admin password for this laptop
@@ -148,7 +123,7 @@ rem echo - DO NOT USE YOUR NORMAL ADMIN PASSWORD FOR YOUR NETWORK!!
 rem pause
 rem echo(
 rem echo(
-rem echo [101m -- Are you sure you set the admin password?[0m
+rem echo [101m -- Are you sure you set the admin password?[0m
 rem pause
 
 
@@ -157,7 +132,7 @@ echo(
 echo Make sure to set a unique admin password in the BIOS and disable alternative boot devices.
 echo Student will need to plug in to the secure docking station, login and run the LMS app to download Canvas files.
 pause
-echo [91m -- WARNING - Don't forget to set an admin BIOS password!!!
+echo [91m -- WARNING - Don't forget to set an admin BIOS password!!![0m
 pause
 
 :endcredential
