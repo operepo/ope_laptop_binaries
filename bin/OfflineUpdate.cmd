@@ -5,7 +5,7 @@ cd %~dp0
 cd ..
 
 echo Killing OPE_LMS app if running...
-taskkill /f /im OPE_LMS.exe
+taskkill /f /im OPE_LMS.exe   1>NUL 2>NUL
 
 echo Updating OPE Code from SMC Server...
 bin\bin\git.exe remote remove ope_smc_origin
