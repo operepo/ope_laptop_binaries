@@ -77,13 +77,19 @@ echo -- Adding CERT Trusts for OPE Services --
 call %~dp0trust_ope_certs.cmd
 
 rem Make sure vstudio redists are installed
-echo Installing required packages...
-call %~dp0vcredist_x86.exe /install /quiet
+echo -- Installing required packages --
+echo - Installing MSVC Runtimes - 2008...
+call %~dp0vcredist_x86_2008.exe /install /quiet
+echo - Installing MSVC Runtimes - 2010...
 rem call %~dp0vcredist_x64_2010.exe /install /quiet
 rem call %~dp0vcredist_x86_2010.exe /install /quiet
+echo - Installing MSVC Runtimes - 2015 to 2019...
 call %~dp0vc_redist.x64_15_to_19.exe /install /quiet
 call %~dp0vc_redist.x86_15_to_19.exe /install /quiet
-call %~dp0Win64OpenSSL_Light-1_0_2r.exe /verysilent
+echo - Installing MSVC Runtimes - LMS redist...
+call %~dp0..\lms\vc_redist.x64.exe /install /quiet
+rem call %~dp0Win64OpenSSL_Light-1_1_1b.exe /silent /allusers /nocancel /norestart /closeapplications /restartapplications /noicons
+rem  /verysilent
 
 
 rem Ask if logs should be cleared
