@@ -63,7 +63,7 @@ if "%NetAlive%"=="true" (
 ) ELSE (
     rem Network not up or not on the sync box
     SET OnSyncBox=false
-    echo [32;1m -- WARNING Not plugged into a sync box or network not active!!![0m
+    echo [91m -- WARNING Not plugged into a sync box or network not active!!![0m
     choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
     if errorlevel 2 goto endcredential
 )
@@ -77,7 +77,7 @@ echo -- Adding CERT Trusts for OPE Services --
 call %~dp0trust_ope_certs.cmd
 
 rem Make sure vstudio redists are installed
-echo -- [91mInstalling required packages - please wait[0m --
+echo -- [32;1mInstalling required packages - please wait[0m --
 call %~dp0install_vc_runtimes.cmd
 
 rem Ask if logs should be cleared
