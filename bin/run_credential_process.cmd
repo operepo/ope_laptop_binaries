@@ -1,5 +1,13 @@
 @echo off
 
+rem escape code for colors
+SET ESC=[
+SET ESC_CLEAR=%ESC%2j
+SET ESC_RESET=%ESC%0m
+SET ESC_GREEN=%ESC%32m
+SET ESC_RED=%ESC%31m
+SET ESC_YELLOW=%ESC%33m
+
 rem Run credential process... This should be started from the 
 rem CredentialLaptop script in the parent folder which switches to
 rem admin mode (e.g. windows UAC prompt)
@@ -29,12 +37,12 @@ rem SET IsHomeEdition=true
 rem SET IsWin10=false
 
 if "%IsHomeEdition%"=="true" (
-    echo [91m -- WARNING Win 10 Home Edition Detected!! Credential tool is only designed to run on Win 10 Pro or Enterprise. [0m
+    echo %ESC_RED% -- WARNING Win 10 Home Edition Detected!! Credential tool is only designed to run on Win 10 Pro or Enterprise. %ESC_RESET%
     choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
     if errorlevel 2 goto endcredential
 )
 if "%IsWin10%"=="false" (
-    echo [91m -- WARNING Invalid Windows Version Detected!! Credential tool is only designed to run on Win 10 Pro or Enterprise. [0m
+    echo %ESC_RED% -- WARNING Invalid Windows Version Detected!! Credential tool is only designed to run on Win 10 Pro or Enterprise. %ESC_RESET%
     choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
     if errorlevel 2 goto endcredential
 )
@@ -63,9 +71,10 @@ if "%NetAlive%"=="true" (
 ) ELSE (
     rem Network not up or not on the sync box
     SET OnSyncBox=false
-    echo [91m -- WARNING Not plugged into a sync box or network not active!!![0m
-    choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
-    if errorlevel 2 goto endcredential
+    echo %ESC_RED% -- WARNING Not plugged into a sync box or network not active!!!%ESC_RESET%
+    choice /C y /T 3 /D y /M "..."
+    rem choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
+    rem if errorlevel 2 goto endcredential
 )
 
 
@@ -75,14 +84,14 @@ rem goto endcredential
 
 echo -- Adding CERT Trusts for OPE Services --
 call %~dp0trust_ope_certs.cmd
-
+echo.
 rem Make sure vstudio redists are installed
-echo -- [32;1mInstalling required packages - please wait[0m --
+echo -- %ESC_GREEN%Installing required packages - please wait... %ESC_RESET% --
 call %~dp0install_vc_runtimes.cmd
-
+echo.
 rem Ask if logs should be cleared
 call %~dp0clear_logs.cmd
-
+echo.
 echo -- Running Credential App to setup student account and link with Canvas...
 set credential_app="%~dp0..\laptop_credential\credential.exe"
 REM set credential_app="python %~dp0\laptop_credential\app.py"
@@ -98,18 +107,21 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo -- Installing latest OPEService...
-call %~dp0install_service.cmd 2>NUL 1<NUL
+call %~dp0install_service.cmd 2>NUL 1>NUL
+echo.
 
 rem apply only gpo firewall rules?
 echo -- Applying firewall settings...
 call %~dp0import_firewall_rules.cmd
+echo.
 
 echo -- Applying windows group policy...
 call %~dp0restore_gpo.cmd
+echo.
 
 echo -- Locking down boot options...
 call %~dp0lock_down_boot_options.cmd
-
+echo.
 
 
 rem ADMIN PASSWORD SHOULD BE AUTO SET DURING Credential
@@ -132,7 +144,11 @@ echo(
 echo Make sure to set a unique admin password in the BIOS and disable alternative boot devices.
 echo Student will need to plug in to the secure docking station, login and run the LMS app to download Canvas files.
 pause
-echo [91m -- WARNING - Don't forget to set an admin BIOS password!!![0m
+echo %ESC_RED% -- WARNING - Don't forget to set an admin BIOS password!!!%ESC_RESET%
 pause
 
+exit
+
 :endcredential
+rem make sure ope service is running
+net start OPEService 2>NUL 1>NUL
