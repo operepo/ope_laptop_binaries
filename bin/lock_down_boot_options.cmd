@@ -50,11 +50,11 @@ rem Option to kill safemode w bluescreen/error
 rem HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SafeBoot
 rem rename "minimal" and "Network" to cause blue screens
 rem OK IF THERE ARE FAILURES ON SECOND RUNS!
-echo Modifying Registry to break safeboot
-reg copy HKLM\System\CurrentControlSet\Control\SafeBoot\Minimal HKLM\System\CurrentControlSet\Control\SafeBoot\MinimalX /s
+rem echo Modifying Registry to break safeboot
+rem reg copy HKLM\System\CurrentControlSet\Control\SafeBoot\Minimal HKLM\System\CurrentControlSet\Control\SafeBoot\MinimalX /s /f
 rem reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Minimal /f
 
-reg copy HKLM\System\CurrentControlSet\Control\SafeBoot\Network HKLM\System\CurrentControlSet\Control\SafeBoot\NetworkX /s
+rem reg copy HKLM\System\CurrentControlSet\Control\SafeBoot\Network HKLM\System\CurrentControlSet\Control\SafeBoot\NetworkX /s /f
 rem reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Network /f
 
 
