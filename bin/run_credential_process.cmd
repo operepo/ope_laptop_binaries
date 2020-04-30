@@ -1,5 +1,7 @@
 @echo off
 
+SET CREDENTIAL_VERSION=1.0.23
+
 rem escape code for colors
 SET ESC=[
 SET ESC_CLEAR=%ESC%2j
@@ -7,6 +9,8 @@ SET ESC_RESET=%ESC%0m
 SET ESC_GREEN=%ESC%32m
 SET ESC_RED=%ESC%31m
 SET ESC_YELLOW=%ESC%33m
+
+echo %ESC_GREEN% Credential Version - $CREDENTIAL_VERSION %ESC_RESET%
 
 rem Run credential process... This should be started from the 
 rem CredentialLaptop script in the parent folder which switches to
@@ -91,6 +95,10 @@ call %~dp0install_vc_runtimes.cmd
 echo.
 rem Ask if logs should be cleared
 call %~dp0clear_logs.cmd
+echo.
+echo.
+echo %ESC_GREEN% Credential Version - $CREDENTIAL_VERSION %ESC_RESET%
+echo.
 echo.
 echo -- Running Credential App to setup student account and link with Canvas...
 set credential_app="%~dp0..\laptop_credential\credential.exe"
