@@ -76,7 +76,7 @@ if "%NetAlive%"=="true" (
     rem Network not up or not on the sync box
     SET OnSyncBox=false
     echo %ESC_RED% -- WARNING Not plugged into a sync box or network not active!!!%ESC_RESET%
-    choice /C y /T 3 /D y /M "..."
+    choice /C y /T 3 /D y /M "Continue? (y/n) "
     rem choice /C yn /T 10 /D n /M "Press y for to run credential anyway, or n to stop"
     rem if errorlevel 2 goto endcredential
 )
