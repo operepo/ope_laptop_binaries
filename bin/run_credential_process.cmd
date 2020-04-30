@@ -1,6 +1,6 @@
 @echo off
 
-SET CREDENTIAL_VERSION=1.0.23
+SET CREDENTIAL_VERSION=1.0.24
 
 rem escape code for colors
 SET ESC=[
