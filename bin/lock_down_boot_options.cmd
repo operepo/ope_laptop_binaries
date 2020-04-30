@@ -41,12 +41,10 @@ bcdedit /set {default} optionsedit off
 rem bcdedit /set {gloabalsettings} optionsedit off
 
 rem disable Win Recovery Environment (WinRE)
-reagentc /disable
+reagentc /disable >> nul 2>&1
 
 
-
-
-bcdedit /deletevalue {current} safeboot
+bcdedit /deletevalue {current} safeboot >> nul 2>&1
 
 rem Option to kill safemode w bluescreen/error
 rem HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SafeBoot
@@ -54,10 +52,10 @@ rem rename "minimal" and "Network" to cause blue screens
 rem OK IF THERE ARE FAILURES ON SECOND RUNS!
 echo Modifying Registry to break safeboot
 reg copy HKLM\System\CurrentControlSet\Control\SafeBoot\Minimal HKLM\System\CurrentControlSet\Control\SafeBoot\MinimalX /s
-reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Minimal /f
+rem reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Minimal /f
 
 reg copy HKLM\System\CurrentControlSet\Control\SafeBoot\Network HKLM\System\CurrentControlSet\Control\SafeBoot\NetworkX /s
-reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Network /f
+rem reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Network /f
 
 
 
