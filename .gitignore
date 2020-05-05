@@ -1,2 +1,9 @@
 /bin/gpo_tmp
+/sshot/sshot.exe.log
+*.qmlc
+*.jsc
+debug.log
+/lms/debug.log
+/lms/QtQuick/Controls/*.qmlc
+/lms/QtQuick/Controls/Private/*.jsc
 /bin/ca.crt
