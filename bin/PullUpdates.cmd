@@ -80,7 +80,8 @@ if !ERRORLEVEL! NEQ 0 (
 
 rem Force us to the current HEAD (force us to update)
 echo %ESC_GREEN%Checking out changes...%ESC_RESET%
-%~dp0\bin\git.exe checkout %GIT_BRANCH% >> nul 2>&1
+%~dp0\bin\git.exe checkout %GIT_BRANCH% 
+rem >> nul 2>&1
 %~dp0\bin\git.exe rebase !PULL_ORIGIN!/%GIT_BRANCH% >> nul 2>&1
 if !ERRORLEVEL! NEQ 0 (
     echo.
