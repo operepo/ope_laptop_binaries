@@ -7,3 +7,4 @@ echo gpo_path %~dp0rc\pre_gpo
 %~dp0lgpo.exe /g "%~dp0rc\pre_gpo"
 
 
+%windir%\system32\gpupdate /force
