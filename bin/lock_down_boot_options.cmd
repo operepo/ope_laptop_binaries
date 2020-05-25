@@ -57,5 +57,7 @@ rem reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Minimal /f
 rem reg copy HKLM\System\CurrentControlSet\Control\SafeBoot\Network HKLM\System\CurrentControlSet\Control\SafeBoot\NetworkX /s /f
 rem reg delete HKLM\System\CurrentControlSet\Control\SafeBoot\Network /f
 
-
+rem todo - return proper error
+rem return 0 for now so we don't blow up credential process
+exit /b 0
 
