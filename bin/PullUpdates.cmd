@@ -51,6 +51,8 @@ SET PULL_ORIGIN=ope_origin
 
 rem Try to pull the online origin
 echo %ESC_GREEN%trying online git pull...%ESC_RESET%
+rem stash save just in case
+%~dp0\bin\git.exe stash save >> nul 2>&1
 %~dp0\bin\git.exe pull !PULL_ORIGIN! %GIT_BRANCH% >> nul 2>&1
 
 if !ERRORLEVEL! NEQ 0 (
