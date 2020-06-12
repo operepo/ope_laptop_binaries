@@ -21,18 +21,36 @@ if %ERRORLEVEL% == 0 (
 ) else (
     echo.
     echo. 
-    echo %ESC_RED%===== Error applying gpo settings!!! =====%ESC_RESET%
+    echo %ESC_RED%===== Error importing gpo settings!!! =====%ESC_RESET%
     echo.
     echo.
     echo %ESC_YELLOW% It is VERY important that this completes to secure the laptop!!! %ESC_RESET%
     echo.
-    choice /C y /T 3 /D y /M " Do you want to try again? (yes you have to complete this to secure the laptop!!!!)"
+    choice /C y /T 3 /D y /M " Trying again..."
     rem if errorlevel 2 goto endcredential
     
     goto instgpo
 )
 
 rem 2>NUL 1<NUL
+:applygpo
+echo %ESC_GREEN%Running gpupdate...%ESC_RESET%
+%windir%\system32\gpupdate /force
+echo %ERRORLEVEL%
+if %ERRORLEVEL% == 0 (
+    echo %ESC_GREEN%success!%ESC_RESET%
+) else (
+    echo.
+    echo. 
+    echo %ESC_RED%===== Error applying gpo settings!!! =====%ESC_RESET%
+    echo.
+    echo.
+    echo %ESC_YELLOW% It is VERY important that this completes to secure the laptop!!! %ESC_RESET%
+    echo.
+    choice /C y /T 3 /D y /M " Trying again..."
+    rem if errorlevel 2 goto endcredential
+    
+    goto applygpo
+)
 
-
-%windir%\system32\gpupdate /force 
+exit /b 0

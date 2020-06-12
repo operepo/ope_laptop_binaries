@@ -32,6 +32,7 @@ if EXIST ../.git (
 ) ELSE (
   echo %ESC_GREEN% Initilizing Local Git Repo...
   %~dp0\bin\git.exe init ..  >> nul 2>&1
+  rem git clean -fd?
   %~dp0\bin\git.exe add ../. >> nul 2>&1
 )
 
@@ -71,7 +72,7 @@ if !ERRORLEVEL! NEQ 0 (
         echo %ESC_RED%***** Failed to git pull from local SMC server, You may not have the latest Laptop Software *****%ESC_RESET%
         echo.
         rem echo !PULL_ORIGIN!
-        exit /B 2f
+        exit /B 2
     ) else (
         echo %ESC_GREEN%-- Updated from local SMC server.%ESC_RESET%
     )
@@ -94,3 +95,5 @@ if !ERRORLEVEL! NEQ 0 (
 ) else (
     echo %ESC_GREEN%Laptop Binaries Update Finished!%ESC_RESET%
 )
+
+exit /b 0
