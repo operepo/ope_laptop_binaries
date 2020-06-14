@@ -38,7 +38,7 @@ if exist OPEService.py (
     echo -- Copying %~dp0\dist\ to %programdata%\ope\Services\
     xcopy /ECIHRKY %QUIET_FLAG% %~dp0\dist\* %programdata%\ope\Services\ 
 ) else (
-    echo -- Copying %~dp0\dist\ to %programdata%\ope\Services\
+    echo -- Copying %~dp0\..\Services\ to %programdata%\ope\Services\
     xcopy /ECIHRKY %QUIET_FLAG% %~dp0\..\Services\* %programdata%\ope\Services\
     
 )
