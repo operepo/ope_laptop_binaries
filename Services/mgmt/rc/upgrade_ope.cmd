@@ -1,0 +1,111 @@
+@echo off
+SETLOCAL ENABLEEXTENSIONS
+SETLOCAL ENABLEDELAYEDEXPANSION
+
+SET ESC=[
+SET ESC_CLEAR=%ESC%2j
+SET ESC_RESET=%ESC%0m
+SET ESC_GREEN=%ESC%32m
+SET ESC_RED=%ESC%31m
+SET ESC_YELLOW=%ESC%33m
+
+set tfile=%temp%\runasuac.vbs
+rem check if we have UAC permissions
+rem >nul 2>&1 "%SYSTEMROOT%\system32\icacls.exe" "%SYSTEMROOT%\system32\config\system"
+NET FILE 1>NUL 2>NUL
+
+rem error flag set = no admin priv
+if '%errorlevel%' NEQ '0' (
+    rem echo Not admin...
+    rem pause
+    goto switchToUAC
+) else ( goto isAlreadyUAC )
+
+echo %ESC_RED%Why are you here - this is a bug - please report it%ESC_RESET%
+pause
+
+:switchToUAC
+    echo Not UAC - Switching to UAC...
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%tfile%"
+    echo args = "/C %~s0 %*" >> "%tfile%"
+    echo For Each strArg in WScript.Arguments >> "%tfile%"
+    echo   args = args ^& strArg ^& " " >> "%tfile%"
+    echo Next >> "%tfile%"
+    echo UAC.ShellExecute "cmd", args, "", "runas", 1 >> "%tfile%"
+    
+    rem wscript "%tfile%" %*
+    wscript "%tfile%"
+    rem echo Params  %*
+    rem pause
+    exit /B
+    
+:isAlreadyUAC
+    rem echo Alread Running with UAC...
+    rem pause
+    if exist "%tfile%" ( del "%tfile%" )
+    pushd "%CD%"
+    cd /D "%~dp0"
+    rem pause
+
+set MGMT_PATH=%~dp0..\mgmt.exe
+set INSTALL_SVC_PATH=%~dp0..\install_service.cmd
+
+rem Can we run mgmt.exe?
+if exist %~dp0..\mgmt.py (
+  rem running in development environment, run as python script
+  cd %~dp0
+  cd ..
+  set MGMT_PATH=python "!cd!\mgmt.py"
+  cd %~dp0
+) 
+
+call !MGMT_PATH! version
+IF %ERRORLEVEL% NEQ 0 (
+    REM Can't run? Try installing vc runtimes
+    echo Unable to run MGMT.exe at !MGMT_PATH!
+    rem call %~dp0..\..\..\bin\install_vc_runtimes.cmd
+    rem run for both possible locations
+    exit /b 2
+    rem exit /b %ERRORLEVEL%
+)
+
+rem Disable Student Accounts during any update check
+echo %ESC_GREEN%Running install_service.cmd...%ESC_RESET%
+call !INSTALL_SVC_PATH!
+IF %ERRORLEVEL% NEQ 0 (
+    REM error in credentialing
+    echo.
+    echo %ESC_RED%****** CRITICAL ERROR - Unable to install new OPE services *******%ESC_RESET%
+    echo.
+    rem run for both possible locations
+    
+    call !MGMT_PATH! bad_credential
+    IF !ERRORLEVEL! NEQ 0 (
+        rem bad call - try running from program data folder instead
+        call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    )
+    
+    exit /b 2
+    rem exit /b %ERRORLEVEL%
+)
+
+rem tell mgmt to finish the upgrade (re-apply security, enable student account)
+call !MGMT_PATH! finish_upgrade
+IF %ERRORLEVEL% NEQ 0 (
+    rem Problem finishing upgrade?
+    echo.
+    echo %ESC_RED%****** CRITICAL ERROR - Unable to install new OPE services *******%ESC_RESET%
+    echo.
+    rem run for both possible locations
+    
+    call !MGMT_PATH! bad_credential
+    IF !ERRORLEVEL! NEQ 0 (
+        rem bad call - try running from program data folder instead
+        call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    )
+    
+    exit /b 2
+)
+
+rem good upgrade, return 0
+exit /b 0
