@@ -73,7 +73,7 @@ if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_YELLOW%Running Bad Credential Fallback%ESC_RESET%
     call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
-    timeout 30
+    timeout 10
     exit /B 2
 )
 
@@ -92,10 +92,10 @@ if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_YELLOW%Running Bad Credential Fallback%ESC_RESET%
     call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
-    timeout 30
+    timeout 10
     exit /B 2
 )
 
 rem good run - return 0
-timeout 30
+timeout 10
 exit /B 0

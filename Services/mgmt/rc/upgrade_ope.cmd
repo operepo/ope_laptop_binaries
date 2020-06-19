@@ -68,7 +68,7 @@ IF %ERRORLEVEL% NEQ 0 (
     echo Unable to run MGMT.exe at !MGMT_PATH!
     rem call %~dp0..\..\..\bin\install_vc_runtimes.cmd
     rem run for both possible locations
-    timeout 30
+    timeout 10
     exit /b 2
     rem exit /b %ERRORLEVEL%
 )
@@ -89,7 +89,7 @@ IF %ERRORLEVEL% NEQ 0 (
         call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
     )
 
-    timeout 30
+    timeout 10
     
     exit /b 2
     rem exit /b %ERRORLEVEL%
@@ -110,10 +110,10 @@ IF %ERRORLEVEL% NEQ 0 (
         call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
     )
     
-    timeout 30
+    timeout 10
     exit /b 2
 )
 
 rem good upgrade, return 0
-timeout 30
+timeout 10
 exit /b 0
