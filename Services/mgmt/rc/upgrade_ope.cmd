@@ -22,7 +22,7 @@ if '%errorlevel%' NEQ '0' (
 ) else ( goto isAlreadyUAC )
 
 echo %ESC_RED%Why are you here - this is a bug - please report it%ESC_RESET%
-pause
+timeout 10
 
 :switchToUAC
     echo Not UAC - Switching to UAC...
@@ -48,7 +48,10 @@ pause
     rem pause
 
 set MGMT_PATH=%~dp0..\mgmt.exe
-set INSTALL_SVC_PATH=%~dp0..\install_service.cmd
+rem NOTE - install_service needs to run from the tmp folder
+rem  - upgrade_ope.cmd should be run from the tmp folder already, but just in case...
+rem set INSTALL_SVC_PATH=%~dp0..\install_service.cmd
+set INSTALL_SVC_PATH=%programdata%\ope\tmp\ope_laptop_binaries\Services\mgmt\install_service.cmd
 
 rem Can we run mgmt.exe?
 if exist %~dp0..\mgmt.py (
@@ -65,6 +68,7 @@ IF %ERRORLEVEL% NEQ 0 (
     echo Unable to run MGMT.exe at !MGMT_PATH!
     rem call %~dp0..\..\..\bin\install_vc_runtimes.cmd
     rem run for both possible locations
+    timeout 30
     exit /b 2
     rem exit /b %ERRORLEVEL%
 )
@@ -84,6 +88,8 @@ IF %ERRORLEVEL% NEQ 0 (
         rem bad call - try running from program data folder instead
         call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
     )
+
+    timeout 30
     
     exit /b 2
     rem exit /b %ERRORLEVEL%
@@ -104,8 +110,10 @@ IF %ERRORLEVEL% NEQ 0 (
         call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
     )
     
+    timeout 30
     exit /b 2
 )
 
 rem good upgrade, return 0
+timeout 30
 exit /b 0
