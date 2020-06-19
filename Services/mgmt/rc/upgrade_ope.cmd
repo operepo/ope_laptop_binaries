@@ -81,7 +81,7 @@ IF %ERRORLEVEL% NEQ 0 (
 
 rem Disable Student Accounts during any update check
 echo %ESC_GREEN%Running install_service.cmd...%ESC_RESET%
-call !INSTALL_SVC_PATH! >> %programdata%\\ope\\tmp\\log\\upgrade.log 2>&1
+call !INSTALL_SVC_PATH!
 IF %ERRORLEVEL% NEQ 0 (
     REM error in credentialing
     echo.
@@ -128,5 +128,5 @@ rem good upgrade, return 0
 rem use ping for slight pause
 set seconds=3
 rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
-echo Upgrade complete. >> %programdata%\\ope\\tmp\\log\\upgrade.log 2>&1
+echo Upgrade complete.
 exit /b 0
