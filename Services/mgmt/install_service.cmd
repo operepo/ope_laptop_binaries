@@ -10,6 +10,9 @@ SET ESC_GREEN=%ESC%32m
 SET ESC_RED=%ESC%31m
 SET ESC_YELLOW=%ESC%33m
 
+rem slight pause, let mgmt finish and exit
+timeout 5
+
 echo %ESC_GREEN%Stopping OPEService...%ESC_RESET%
 net stop OPEService
 if %ERRORLEVEL% NEQ 0 (
@@ -34,6 +37,9 @@ rem     exit /B 2
 rem )
 
 rem need to copy the OPEService folder into the proper location
+
+echo %ESC_GREEN%Slight pause for things to shut down...%ESC_RESET%
+timeout 10
 
 echo %ESC_GREEN%Copying latest version of Services...%ESC_RESET%
 rem /Q for quiet, /F for full
@@ -67,6 +73,7 @@ if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_YELLOW%Running Bad Credential Fallback%ESC_RESET%
     call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    timeout 30
     exit /B 2
 )
 
@@ -85,8 +92,10 @@ if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_YELLOW%Running Bad Credential Fallback%ESC_RESET%
     call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    timeout 30
     exit /B 2
 )
 
 rem good run - return 0
+timeout 30
 exit /B 0
