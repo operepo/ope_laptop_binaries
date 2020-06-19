@@ -53,10 +53,16 @@ SET QUIET_FLAG=/Q
 
 if exist %~dp0OPEService.py (
     rem /Q instead of F
+    echo -- Clearing old GPO files %programdata%\ope\Services\mgmt\rc\gpo
+    rmdir /S /Q %programdata%\ope\Services\mgmt\rc\gpo
+
     echo -- Copying %~dp0\dist\ to %programdata%\ope\Services\
     xcopy /ECIHRKY %QUIET_FLAG% %~dp0\dist\* %programdata%\ope\Services\ 
 ) else (
     rem running from mgmt folder
+    echo -- Clearing old GPO files %programdata%\ope\Services\mgmt\rc\gpo
+    rmdir /S /Q %programdata%\ope\Services\mgmt\rc\gpo
+
     echo -- Copying %~dp0\..\ to %programdata%\ope\Services\
     xcopy /ECIHRKY %QUIET_FLAG% %~dp0\..\* %programdata%\ope\Services\
 )
