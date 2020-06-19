@@ -73,7 +73,7 @@ IF %ERRORLEVEL% NEQ 0 (
 
 rem Disable Student Accounts during any update check
 echo %ESC_GREEN%Running install_service.cmd...%ESC_RESET%
-call !INSTALL_SVC_PATH!
+call !INSTALL_SVC_PATH! >> %programdata%\\ope\\tmp\\log\\upgrade.log 2>&1
 IF %ERRORLEVEL% NEQ 0 (
     REM error in credentialing
     echo.
@@ -114,4 +114,5 @@ IF %ERRORLEVEL% NEQ 0 (
 
 rem good upgrade, return 0
 rem timeout 10
+echo Upgrade complete. >> %programdata%\\ope\\tmp\\log\\upgrade.log 2>&1
 exit /b 0
