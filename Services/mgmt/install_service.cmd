@@ -11,7 +11,7 @@ SET ESC_RED=%ESC%31m
 SET ESC_YELLOW=%ESC%33m
 
 rem slight pause, let mgmt finish and exit
-timeout 5
+timeout 2
 
 echo %ESC_GREEN%Stopping OPEService...%ESC_RESET%
 net stop OPEService
@@ -97,5 +97,5 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 rem good run - return 0
-timeout 10
+rem timeout 10
 exit /B 0

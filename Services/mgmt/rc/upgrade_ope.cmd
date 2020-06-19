@@ -17,12 +17,12 @@ NET FILE 1>NUL 2>NUL
 rem error flag set = no admin priv
 if '%errorlevel%' NEQ '0' (
     rem echo Not admin...
-    rem pause
+    rem timeout 5
     goto switchToUAC
 ) else ( goto isAlreadyUAC )
 
 echo %ESC_RED%Why are you here - this is a bug - please report it%ESC_RESET%
-timeout 10
+timeout 5
 
 :switchToUAC
     echo Not UAC - Switching to UAC...
@@ -36,16 +36,14 @@ timeout 10
     rem wscript "%tfile%" %*
     wscript "%tfile%"
     rem echo Params  %*
-    rem pause
+    rem timeout 5
     exit /B
     
 :isAlreadyUAC
     rem echo Alread Running with UAC...
-    rem pause
     if exist "%tfile%" ( del "%tfile%" )
     pushd "%CD%"
     cd /D "%~dp0"
-    rem pause
 
 set MGMT_PATH=%~dp0..\mgmt.exe
 rem NOTE - install_service needs to run from the tmp folder
@@ -115,5 +113,5 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 rem good upgrade, return 0
-timeout 10
+rem timeout 10
 exit /b 0
