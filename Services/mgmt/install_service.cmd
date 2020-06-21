@@ -14,7 +14,7 @@ SET ESC_YELLOW=%ESC%33m
 rem slight pause, let mgmt finish and exit
 rem use ping for slight pause
 set seconds=3
-PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 
 echo %ESC_GREEN%Stopping OPEService...%ESC_RESET%
 net stop OPEService
@@ -44,7 +44,7 @@ rem need to copy the OPEService folder into the proper location
 echo %ESC_GREEN%Slight pause for things to shut down...%ESC_RESET%
 rem use ping for slight pause
 set seconds=10
-PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 
 
 echo %ESC_GREEN%Copying latest version of Services...%ESC_RESET%
@@ -87,7 +87,7 @@ if %ERRORLEVEL% NEQ 0 (
     call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
     rem use ping for slight pause
     set seconds=10
-    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 
     exit /B 2
 )
@@ -109,7 +109,7 @@ if %ERRORLEVEL% NEQ 0 (
     call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
     rem use ping for slight pause
     set seconds=10
-    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 
     exit /B 2
 )
@@ -117,6 +117,6 @@ if %ERRORLEVEL% NEQ 0 (
 rem good run - return 0
 rem use ping for slight pause
 rem set seconds=5
-rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 
 exit /B 0
