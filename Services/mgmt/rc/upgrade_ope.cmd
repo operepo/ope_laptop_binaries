@@ -19,14 +19,14 @@ if '%errorlevel%' NEQ '0' (
     rem echo Not admin...
     rem use ping for slight pause
     rem set seconds=3
-    rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+    rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
     goto switchToUAC
 ) else ( goto isAlreadyUAC )
 
 echo %ESC_RED%Why are you here - this is a bug - please report it%ESC_RESET%
 rem use ping for slight pause
 set seconds=4
-PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 
 :switchToUAC
     echo Not UAC - Switching to UAC...
@@ -42,7 +42,7 @@ PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
     rem echo Params  %*
     rem use ping for slight pause
     set seconds=3
-    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
     exit /B
     
 :isAlreadyUAC
@@ -74,7 +74,7 @@ IF %ERRORLEVEL% NEQ 0 (
     rem run for both possible locations
     rem use ping for slight pause
     set seconds=10
-    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
     exit /b 2
     rem exit /b %ERRORLEVEL%
 )
@@ -97,7 +97,7 @@ IF %ERRORLEVEL% NEQ 0 (
 
     rem use ping for slight pause
     set seconds=10
-    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
     
     exit /b 2
     rem exit /b %ERRORLEVEL%
@@ -120,13 +120,13 @@ IF %ERRORLEVEL% NEQ 0 (
     
     rem use ping for slight pause
     set seconds=10
-    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+    PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
     exit /b 2
 )
 
 rem good upgrade, return 0
 rem use ping for slight pause
 set seconds=3
-rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n %1 ::1 >NUL 2>&1
+rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 echo Upgrade complete.
 exit /b 0
