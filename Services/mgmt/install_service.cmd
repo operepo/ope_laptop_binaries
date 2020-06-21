@@ -78,7 +78,7 @@ rem Install the service - ensure it is installed w the proper settings
 rem --startup
 echo %ESC_GREEN%Registering OPEService...%ESC_RESET%
 rem --interactive
-%programdata%\ope\Services\OPEService\OPEService.exe install
+%programdata%\ope\Services\OPEService\OPEService.exe --startup auto install
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_RED%ERROR Registering OPE Service! - Something wen't VERY wrong. %ESC_RESET%
