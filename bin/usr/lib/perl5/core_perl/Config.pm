@@ -3,14 +3,14 @@
 
 # for a description of the variables, please have a look at the
 # Glossary file, as written in the Porting folder, or use the url:
-# https://github.com/Perl/perl5/blob/blead/Porting/Glossary
+# http://perl5.git.perl.org/perl.git/blob/HEAD:/Porting/Glossary
 
 package Config;
 use strict;
 use warnings;
-our ( %Config, $VERSION );
+use vars '%Config', '$VERSION';
 
-$VERSION = "5.030002";
+$VERSION = "5.024001";
 
 # Skip @Config::EXPORT because it only contains %Config, which we special
 # case below as it's not a function. @Config::EXPORT won't change in the
@@ -56,11 +56,11 @@ sub import {
     return;
 }
 
-die "$0: Perl lib version (5.30.2) doesn't match executable '$^X' version ($])"
+die "$0: Perl lib version (5.24.1) doesn't match executable '$^X' version ($])"
     unless $^V;
 
-$^V eq 5.30.2
-    or die sprintf "%s: Perl lib version (5.30.2) doesn't match executable '$^X' version (%vd)", $0, $^V;
+$^V eq 5.24.1
+    or die sprintf "%s: Perl lib version (5.24.1) doesn't match executable '$^X' version (%vd)", $0, $^V;
 
 
 sub FETCH {
@@ -85,7 +85,7 @@ sub AUTOLOAD {
 # tie returns the object, so the value returned to require will be true.
 tie %Config, 'Config', {
     archlibexp => '/usr/lib/perl5/core_perl',
-    archname => 'i686-msys-thread-multi-64int',
+    archname => 'x86_64-msys-thread-multi',
     cc => 'gcc',
     d_readlink => undef,
     d_symlink => 'define',
@@ -98,7 +98,7 @@ tie %Config, 'Config', {
     ldlibpthname => 'PATH',
     libpth => '/usr/lib',
     osname => 'msys',
-    osvers => '3.1.4-340.i686',
+    osvers => '2.7.0(0.30653)',
     path_sep => ':',
     privlibexp => '/usr/share/perl5/core_perl',
     scriptdir => '/usr/bin/core_perl',
@@ -107,5 +107,5 @@ tie %Config, 'Config', {
     so => 'dll',
     useithreads => 'define',
     usevendorprefix => 'define',
-    version => '5.30.2',
+    version => '5.24.1',
 };

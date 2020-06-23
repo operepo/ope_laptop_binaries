@@ -4,7 +4,7 @@ package re;
 use strict;
 use warnings;
 
-our $VERSION     = "0.37";
+our $VERSION     = "0.32";
 our @ISA         = qw(Exporter);
 our @EXPORT_OK   = ('regmust',
                     qw(is_regexp regexp_pattern
@@ -23,7 +23,6 @@ my %reflags = (
     s => 1 << ($PMMOD_SHIFT + 1),
     i => 1 << ($PMMOD_SHIFT + 2),
     x => 1 << ($PMMOD_SHIFT + 3),
-   xx => 1 << ($PMMOD_SHIFT + 4),
     n => 1 << ($PMMOD_SHIFT + 5),
     p => 1 << ($PMMOD_SHIFT + 6),
     strict => 1 << ($PMMOD_SHIFT + 10),
@@ -113,6 +112,7 @@ sub bits {
     my $on = shift;
     my $bits = 0;
     my $turning_all_off = ! @_ && ! $on;
+    my %seen;   # Has flag already been seen?
     if ($turning_all_off) {
 
         # Pretend were called with certain parameters, which are best dealt
@@ -180,7 +180,6 @@ sub bits {
 	} elsif ($s =~ s/^\///) {
 	    my $reflags = $^H{reflags} || 0;
 	    my $seen_charset;
-            my $x_count = 0;
 	    while ($s =~ m/( . )/gx) {
                 local $_ = $1;
 		if (/[adul]/) {
@@ -226,19 +225,7 @@ sub bits {
                                         && $^H{reflags_charset} == $reflags{$_};
 		    }
 		} elsif (exists $reflags{$_}) {
-                    if ($_ eq 'x') {
-                        $x_count++;
-                        if ($x_count > 2) {
-			    require Carp;
-                            Carp::carp(
-                            qq 'The "x" flag may only appear a maximum of twice'
-                            );
-                        }
-                        elsif ($x_count == 2) {
-                            $_ = 'xx';  # First time through got the /x
-                        }
-                    }
-
+                    $seen{$_}++;
                     $on
 		      ? $reflags |= $reflags{$_}
 		      : ($reflags &= ~$reflags{$_});
@@ -259,6 +246,18 @@ sub bits {
                        join(', ', map {qq('$_')} 'debug', 'debugcolor', sort keys %bitmask),
                        ")");
 	}
+    }
+    if (exists $seen{'x'} && $seen{'x'} > 1
+        && (warnings::enabled("deprecated")
+            || warnings::enabled("regexp")))
+    {
+        my $message = "Having more than one /x regexp modifier is deprecated";
+        if (warnings::enabled("deprecated")) {
+            warnings::warn("deprecated", $message);
+        }
+        else {
+            warnings::warn("regexp", $message);
+        }
     }
 
     if ($turning_all_off) {
@@ -421,34 +420,20 @@ under non-strict.
 
 =head2 '/flags' mode
 
-When C<use re '/I<flags>'> is specified, the given I<flags> are automatically
+When C<use re '/flags'> is specified, the given flags are automatically
 added to every regular expression till the end of the lexical scope.
-I<flags> can be any combination of
-C<'a'>,
-C<'aa'>,
-C<'d'>,
-C<'i'>,
-C<'l'>,
-C<'m'>,
-C<'n'>,
-C<'p'>,
-C<'s'>,
-C<'u'>,
-C<'x'>,
-and/or
-C<'xx'>.
 
-C<no re '/I<flags>'> will turn off the effect of C<use re '/I<flags>'> for the
+C<no re '/flags'> will turn off the effect of C<use re '/flags'> for the
 given flags.
 
-For example, if you want all your regular expressions to have /msxx on by
+For example, if you want all your regular expressions to have /msx on by
 default, simply put
 
-    use re '/msxx';
+    use re '/msx';
 
 at the top of your code.
 
-The character set C</adul> flags cancel each other out. So, in this example,
+The character set /adul flags cancel each other out. So, in this example,
 
     use re "/u";
     "ss" =~ /\xdf/;
@@ -456,13 +441,6 @@ The character set C</adul> flags cancel each other out. So, in this example,
     "ss" =~ /\xdf/;
 
 the second C<use re> does an implicit C<no re '/u'>.
-
-Similarly,
-
-    use re "/xx";   # Doubled-x
-    ...
-    use re "/x";    # Single x from here on
-    ...
 
 Turning on one of the character set flags with C<use re> takes precedence over the
 C<locale> pragma and the 'unicode_strings' C<feature>, for regular
@@ -629,9 +607,7 @@ These are useful shortcuts to save on the typing.
 =item ALL
 
 Enable all options at once except OFFSETS, OFFSETSDBG and BUFFERS.
-(To get every single option without exception, use both ALL and EXTRA, or
-starting in 5.30 on a C<-DDEBUGGING>-enabled perl interpreter, use
-the B<-Drv> command-line switches.)
+(To get every single option without exception, use both ALL and EXTRA.)
 
 =item All
 

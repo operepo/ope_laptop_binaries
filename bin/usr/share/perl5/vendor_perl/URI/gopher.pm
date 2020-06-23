@@ -3,8 +3,6 @@ package URI::gopher;  # <draft-murali-url-gopher>, Dec 4, 1996
 use strict;
 use warnings;
 
-our $VERSION = '1.76';
-
 use parent 'URI::_server';
 
 use URI::Escape qw(uri_unescape);

@@ -3,8 +3,6 @@ package URI::ssh;
 use strict;
 use warnings;
 
-our $VERSION = '1.76';
-
 use parent 'URI::_login';
 
 # ssh://[USER@]HOST[:PORT]/SRC

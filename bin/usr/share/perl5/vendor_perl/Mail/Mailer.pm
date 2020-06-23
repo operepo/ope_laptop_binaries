@@ -1,24 +1,20 @@
-# Copyrights 1995-2019 by [Mark Overmeer <markov@cpan.org>].
+# Copyrights 1995-2014 by [Mark Overmeer <perl@overmeer.net>].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.02.
-# This code is part of the bundle MailTools.  Meta-POD processed with
-# OODoc into POD and HTML manual-pages.  See README.md for Copyright.
-# Licensed under the same terms as Perl itself.
+# Pod stripped from pm file by OODoc 2.01.
+use strict;
 
 package Mail::Mailer;
 use vars '$VERSION';
-$VERSION = '2.21';
+$VERSION = '2.14';
 
 use base 'IO::Handle';
 
-use strict;
 use POSIX qw/_exit/;
 
 use Carp;
 use Config;
 
-#--------------
 
 
 sub is_exe($);
@@ -159,9 +155,8 @@ sub open($)
         }
     }
     else
-    {   # Sending is handled by a subclass
-        $self->exec(undef, $args, \@to)
-            or die $!;    
+    {   $self->exec($exe, $args, \@to, $sender)
+            or die $!;
     }
 
     $self->set_headers($hdrs);
@@ -216,6 +211,5 @@ sub close(@)
 
 sub DESTROY { shift->close }
 
-#--------------
 
 1;

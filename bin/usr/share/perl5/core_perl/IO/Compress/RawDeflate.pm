@@ -6,18 +6,18 @@ use strict ;
 use warnings;
 use bytes;
 
-use IO::Compress::Base 2.084 ;
-use IO::Compress::Base::Common  2.084 qw(:Status );
-use IO::Compress::Adapter::Deflate 2.084 ;
+use IO::Compress::Base 2.069 ;
+use IO::Compress::Base::Common  2.069 qw(:Status );
+use IO::Compress::Adapter::Deflate 2.069 ;
 
 require Exporter ;
 
 our ($VERSION, @ISA, @EXPORT_OK, %DEFLATE_CONSTANTS, %EXPORT_TAGS, $RawDeflateError);
 
-$VERSION = '2.084';
+$VERSION = '2.069_001';
 $RawDeflateError = '';
 
-@ISA = qw(IO::Compress::Base Exporter);
+@ISA = qw(Exporter IO::Compress::Base);
 @EXPORT_OK = qw( $RawDeflateError rawdeflate ) ;
 push @EXPORT_OK, @IO::Compress::Adapter::Deflate::EXPORT_OK ;
 
@@ -116,8 +116,8 @@ sub getExtraParams
     return getZlibParams();
 }
 
-use IO::Compress::Base::Common  2.084 qw(:Parse);
-use Compress::Raw::Zlib  2.084 qw(Z_DEFLATED Z_DEFAULT_COMPRESSION Z_DEFAULT_STRATEGY);
+use IO::Compress::Base::Common  2.069 qw(:Parse);
+use Compress::Raw::Zlib  2.069 qw(Z_DEFLATED Z_DEFAULT_COMPRESSION Z_DEFAULT_STRATEGY);
 our %PARAMS = (
             #'method'   => [IO::Compress::Base::Common::Parse_unsigned,  Z_DEFLATED],
             'level'     => [IO::Compress::Base::Common::Parse_signed,    Z_DEFAULT_COMPRESSION],
@@ -223,6 +223,8 @@ __END__
 =head1 NAME
 
 IO::Compress::RawDeflate - Write RFC 1951 files/buffers
+
+
 
 =head1 SYNOPSIS
 
@@ -423,7 +425,9 @@ This parameter defaults to 0.
 
 =item C<< BinModeIn => 0|1 >>
 
-This option is now a no-op. All files will be read in binmode.
+When reading from a file or filehandle, set C<binmode> before reading.
+
+Defaults to 0.
 
 =item C<< Append => 0|1 >>
 
@@ -936,6 +940,9 @@ These symbolic constants are used by the C<Strategy> option in the constructor.
     Z_FIXED
     Z_DEFAULT_STRATEGY
 
+
+
+
 =back
 
 =head1 EXAMPLES
@@ -950,7 +957,7 @@ See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
 =head1 SEE ALSO
 
-L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzip>, L<IO::Uncompress::UnLzip>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Compress::Zstd>, L<IO::Uncompress::UnZstd>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
+L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
 L<IO::Compress::FAQ|IO::Compress::FAQ>
 
@@ -959,21 +966,21 @@ L<Archive::Tar|Archive::Tar>,
 L<IO::Zlib|IO::Zlib>
 
 For RFC 1950, 1951 and 1952 see
-L<http://www.faqs.org/rfcs/rfc1950.html>,
-L<http://www.faqs.org/rfcs/rfc1951.html> and
-L<http://www.faqs.org/rfcs/rfc1952.html>
+F<http://www.faqs.org/rfcs/rfc1950.html>,
+F<http://www.faqs.org/rfcs/rfc1951.html> and
+F<http://www.faqs.org/rfcs/rfc1952.html>
 
 The I<zlib> compression library was written by Jean-loup Gailly
-C<gzip@prep.ai.mit.edu> and Mark Adler C<madler@alumni.caltech.edu>.
+F<gzip@prep.ai.mit.edu> and Mark Adler F<madler@alumni.caltech.edu>.
 
 The primary site for the I<zlib> compression library is
-L<http://www.zlib.org>.
+F<http://www.zlib.org>.
 
-The primary site for gzip is L<http://www.gzip.org>.
+The primary site for gzip is F<http://www.gzip.org>.
 
 =head1 AUTHOR
 
-This module was written by Paul Marquess, C<pmqs@cpan.org>.
+This module was written by Paul Marquess, F<pmqs@cpan.org>.
 
 =head1 MODIFICATION HISTORY
 
@@ -981,7 +988,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2019 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2015 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

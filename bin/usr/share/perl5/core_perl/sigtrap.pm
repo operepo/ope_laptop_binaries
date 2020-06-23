@@ -8,7 +8,7 @@ sigtrap - Perl pragma to enable simple signal handling
 
 use Carp;
 
-$VERSION = 1.09;
+$VERSION = 1.08;
 $Verbose ||= 0;
 
 sub import {
@@ -81,49 +81,16 @@ sub handler_die {
 
 sub handler_traceback {
     package DB;		# To get subroutine args.
-    my $use_print;
     $SIG{'ABRT'} = DEFAULT;
     kill 'ABRT', $$ if $panic++;
-
-    # This function might be called as an unsafe signal handler, so it
-    # tries to delay any memory allocations as long as possible.
-    #
-    # Unfortunately with PerlIO layers, using syswrite() here has always
-    # been broken.
-    #
-    # Calling PerlIO::get_layers() here is tempting, but that does
-    # allocations, which we're trying to avoid for this early code.
-    if (eval { syswrite(STDERR, 'Caught a SIG', 12); 1 }) {
-        syswrite(STDERR, $_[0], length($_[0]));
-        syswrite(STDERR, ' at ', 4);
-    }
-    else {
-        print STDERR 'Caught a SIG', $_[0], ' at ';
-        ++$use_print;
-    }
-
+    syswrite(STDERR, 'Caught a SIG', 12);
+    syswrite(STDERR, $_[0], length($_[0]));
+    syswrite(STDERR, ' at ', 4);
     ($pack,$file,$line) = caller;
-    unless ($use_print) {
-        syswrite(STDERR, $file, length($file));
-        syswrite(STDERR, ' line ', 6);
-        syswrite(STDERR, $line, length($line));
-        syswrite(STDERR, "\n", 1);
-    }
-    else {
-        print STDERR $file, ' line ', $line, "\n";
-    }
-
-    # we've got our basic output done, from now on we can be freer with allocations
-    # find out whether we have any layers we need to worry about
-    unless ($use_print) {
-        my @layers = PerlIO::get_layers(*STDERR);
-        for my $name (@layers) {
-            unless ($name =~ /^(unix|perlio)$/) {
-                ++$use_print;
-                last;
-            }
-        }
-    }
+    syswrite(STDERR, $file, length($file));
+    syswrite(STDERR, ' line ', 6);
+    syswrite(STDERR, $line, length($line));
+    syswrite(STDERR, "\n", 1);
 
     # Now go for broke.
     for ($i = 1; ($p,$f,$l,$s,$h,$w,$e,$r) = caller($i); $i++) {
@@ -149,12 +116,7 @@ sub handler_traceback {
 	}
 	$f = "file '$f'" unless $f eq '-e';
 	$mess = "$w$s$a called from $f line $l\n";
-        if ($use_print) {
-            print STDERR $mess;
-        }
-        else {
-            syswrite(STDERR, $mess, length($mess));
-        }
+	syswrite(STDERR, $mess, length($mess));
     }
     kill 'ABRT', $$;
 }

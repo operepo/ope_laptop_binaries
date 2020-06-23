@@ -3,7 +3,7 @@ package URI::_punycode;
 use strict;
 use warnings;
 
-our $VERSION = '1.76';
+our $VERSION = "1.68";
 
 use Exporter 'import';
 our @EXPORT = qw(encode_punycode decode_punycode);
@@ -146,72 +146,58 @@ sub min {
 1;
 __END__
 
-=encoding utf8
-
 =head1 NAME
 
 URI::_punycode - encodes Unicode string in Punycode
 
 =head1 SYNOPSIS
 
-  use strict;
-  use warnings;
-  use utf8;
-
-  use URI::_punycode qw(encode_punycode decode_punycode);
-
-  # encode a unicode string
-  my $punycode = encode_punycode('http://☃.net'); # http://.net-xc8g
-  $punycode = encode_punycode('bücher'); # bcher-kva
-  $punycode = encode_punycode('他们为什么不说中文'); # ihqwcrb4cv8a8dqg056pqjye
-
-  # decode a punycode string back into a unicode string
-  my $unicode = decode_punycode('http://.net-xc8g'); # http://☃.net
-  $unicode = decode_punycode('bcher-kva'); # bücher
-  $unicode = decode_punycode('ihqwcrb4cv8a8dqg056pqjye'); # 他们为什么不说中文
+  use URI::_punycode;
+  $punycode = encode_punycode($unicode);
+  $unicode  = decode_punycode($punycode);
 
 =head1 DESCRIPTION
 
-L<URI::_punycode> is a module to encode / decode Unicode strings into
-L<Punycode|https://tools.ietf.org/html/rfc3492>, an efficient
-encoding of Unicode for use with L<IDNA|https://tools.ietf.org/html/rfc5890>.
+URI::_punycode is a module to encode / decode Unicode strings into
+Punycode, an efficient encoding of Unicode for use with IDNA.
+
+This module requires Perl 5.6.0 or over to handle UTF8 flagged Unicode
+strings.
 
 =head1 FUNCTIONS
 
-All functions throw exceptions on failure. You can C<catch> them with
-L<Syntax::Keyword::Try> or L<Try::Tiny>. The following functions are exported
-by default.
+This module exports following functions by default.
 
-=head2 encode_punycode
+=over 4
 
-  my $punycode = encode_punycode('http://☃.net');  # http://.net-xc8g
-  $punycode = encode_punycode('bücher'); # bcher-kva
-  $punycode = encode_punycode('他们为什么不说中文') # ihqwcrb4cv8a8dqg056pqjye
+=item encode_punycode
 
-Takes a Unicode string (UTF8-flagged variable) and returns a Punycode
+  $punycode = encode_punycode($unicode);
+
+takes Unicode string (UTF8-flagged variable) and returns Punycode
 encoding for it.
 
-=head2 decode_punycode
+=item decode_punycode
 
-  my $unicode = decode_punycode('http://.net-xc8g'); # http://☃.net
-  $unicode = decode_punycode('bcher-kva'); # bücher
-  $unicode = decode_punycode('ihqwcrb4cv8a8dqg056pqjye'); # 他们为什么不说中文
+  $unicode = decode_punycode($punycode)
 
-Takes a Punycode encoding and returns original Unicode string.
+takes Punycode encoding and returns original Unicode string.
+
+=back
+
+These functions throw exceptions on failure. You can catch 'em via
+C<eval>.
 
 =head1 AUTHOR
 
-Tatsuhiko Miyagawa <F<miyagawa@bulknews.net>> is the author of
-L<IDNA::Punycode> which was the basis for this module.
-
-=head1 SEE ALSO
-
-L<IDNA::Punycode>, L<RFC 3492|https://tools.ietf.org/html/rfc3492>,
-L<RFC 5891|https://tools.ietf.org/html/rfc5891>
-
-=head1 COPYRIGHT AND LICENSE
+Tatsuhiko Miyagawa E<lt>miyagawa@bulknews.netE<gt> is the author of
+IDNA::Punycode v0.02 which was the basis for this module.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<IDNA::Punycode>, RFC 3492
 
 =cut

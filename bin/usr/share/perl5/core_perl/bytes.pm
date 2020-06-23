@@ -1,6 +1,6 @@
 package bytes;
 
-our $VERSION = '1.07';
+our $VERSION = '1.05';
 
 $bytes::hint_bits = 0x00000008;
 
@@ -72,7 +72,7 @@ non-destructively examine characters' individual bytes.  Just insert this
 pragma temporarily, and remove it after the debugging is finished.
 
 The original usage can be accomplished by explicit (rather than this pragma's
-implicit) encoding using the L<Encode> module:
+implict) encoding using the L<Encode> module:
 
     use Encode qw/encode/;
 
@@ -81,6 +81,8 @@ implicit) encoding using the L<Encode> module:
 
 Or, if performance is needed and you are only interested in the UTF-8
 representation:
+
+    use utf8;
 
     utf8::encode(my $utf8_byte_string = $string);
 

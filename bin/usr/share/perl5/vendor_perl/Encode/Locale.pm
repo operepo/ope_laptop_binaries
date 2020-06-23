@@ -1,7 +1,7 @@
 package Encode::Locale;
 
 use strict;
-our $VERSION = "1.05";
+our $VERSION = "1.04";
 
 use base 'Exporter';
 our @EXPORT_OK = qw(
@@ -25,17 +25,20 @@ sub _init {
 	unless ($ENCODING_LOCALE) {
 	    # Try to obtain what the Windows ANSI code page is
 	    eval {
-		unless (defined &GetACP) {
+		unless (defined &GetConsoleCP) {
 		    require Win32;
-                    eval { Win32::GetACP() };
-		    *GetACP = sub { &Win32::GetACP } unless $@;
+                    # no point falling back to Win32::GetConsoleCP from this
+                    # as added same time, 0.45
+                    eval { Win32::GetConsoleCP() };
+                    # manually "import" it since Win32->import refuses
+		    *GetConsoleCP = sub { &Win32::GetConsoleCP } unless $@;
 		}
-		unless (defined &GetACP) {
+		unless (defined &GetConsoleCP) {
 		    require Win32::API;
-		    Win32::API->Import('kernel32', 'int GetACP()');
+		    Win32::API->Import('kernel32', 'int GetConsoleCP()');
 		}
-		if (defined &GetACP) {
-		    my $cp = GetACP();
+		if (defined &GetConsoleCP) {
+		    my $cp = GetConsoleCP();
 		    $ENCODING_LOCALE = "cp$cp" if $cp;
 		}
 	    };

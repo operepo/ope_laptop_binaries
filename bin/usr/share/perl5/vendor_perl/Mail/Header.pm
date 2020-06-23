@@ -1,14 +1,10 @@
-# Copyrights 1995-2019 by [Mark Overmeer <markov@cpan.org>].
+# Copyrights 1995-2014 by [Mark Overmeer <perl@overmeer.net>].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.02.
-# This code is part of the bundle MailTools.  Meta-POD processed with
-# OODoc into POD and HTML manual-pages.  See README.md for Copyright.
-# Licensed under the same terms as Perl itself.
-
+# Pod stripped from pm file by OODoc 2.01.
 package Mail::Header;
 use vars '$VERSION';
-$VERSION = '2.21';
+$VERSION = '2.14';
 
 
 use strict;
@@ -17,6 +13,17 @@ use Carp;
 my $MAIL_FROM = 'KEEP';
 my %HDR_LENGTHS = ();
 
+# Pattern to match a RFC822 Field name ( Extract from RFC #822)
+#
+#     field       =  field-name ":" [ field-body ] CRLF
+#
+#     field-name  =  1*<any CHAR, excluding CTLs, SPACE, and ":">
+#
+#     CHAR        =  <any ASCII character>        ; (  0-177,  0.-127.)
+#     CTL         =  <any ASCII control           ; (  0- 37,  0.- 31.)
+#		      character and DEL>          ; (    177,     127.)
+# I have included the trailing ':' in the field-name
+#
 our $FIELD_NAME = '[^\x00-\x1f\x7f-\xff :]+:';
 
 
@@ -78,7 +85,7 @@ sub _fold_line
     my $min = int($maxlen * 4 / 5) - 4;
 
     $_[0] =~ s/[\r\n]+//og;        # Remove new-lines
-    $_[0] =~ s/\s*\Z/\n/so;        # End line with an EOLN
+    $_[0] =~ s/\s*\Z/\n/so;        # End line with a EOLN
 
     return if $_[0] =~ /^From\s/io;
 
@@ -222,7 +229,6 @@ sub _insert
     }
 }
 
-#------------
 
 sub new
 {   my $call  = shift;
@@ -271,27 +277,25 @@ sub dup
     $dup;
 }
 
-#------------
 
 sub extract
 {   my ($self, $lines) = @_;
     $self->empty;
 
-    while(@$lines)
-    {   my $line = shift @$lines;
-        last if $line =~ /^\r?$/;
+    while(@$lines && $lines->[0] =~ /^($FIELD_NAME|From )/o)
+    {    my $tag  = $1;
+         my $line = shift @$lines;
+         $line   .= shift @$lines
+             while @$lines && $lines->[0] =~ /^[ \t]+/o;
 
-        $line    =~ /^($FIELD_NAME|From )/o or next;
-        my $tag  = $1;
+         ($tag, $line) = _fmt_line $self, $tag, $line;
 
-        $line   .= shift @$lines
-            while @$lines && $lines->[0] =~ /^[ \t]+/;
-
-        ($tag, $line) = _fmt_line $self, $tag, $line;
-
-        _insert $self, $tag, $line, -1
-            if defined $line;
+         _insert $self, $tag, $line, -1
+             if defined $line;
     }
+
+    shift @$lines
+        if @$lines && $lines->[0] =~ /^\s*$/o;
 
     $self;
 }
@@ -299,14 +303,16 @@ sub extract
 
 sub read
 {   my ($self, $fd) = @_;
+
     $self->empty;
 
-    my ($ln, $tag, $line);
+    my ($tag, $line);
+    my $ln = '';
     while(1)
     {   $ln = <$fd>;
 
-        if(defined $ln && defined $line && $ln =~ /^[ \t]+/)
-        {   $line .= $ln;  # folded line
+        if(defined $ln && defined $line && $ln =~ /\A[ \t]+/o)
+        {   $line .= $ln;
             next;
         }
 
@@ -314,12 +320,11 @@ sub read
         {   ($tag, $line) = _fmt_line $self, $tag, $line;
             _insert $self, $tag, $line, -1
 	        if defined $line;
-            ($tag, $line) = ();
         }
 
-        last if !defined $ln || $ln =~ m/^\r?$/;
+        defined $ln && $ln =~ /^($FIELD_NAME|From )/o
+            or last;
 
-        $ln =~ /^($FIELD_NAME|From )/o or next;
         ($tag, $line) = ($1, $ln);
     }
 
@@ -348,6 +353,11 @@ sub header
 }
 
 
+### text kept, for educational purpose... originates from 2000/03
+# This can probably be optimized. I didn't want to mess much around with
+# the internal implementation as for now...
+# -- Tobias Brox <tobix@cpan.org>
+
 sub header_hashref
 {   my ($self, $hashref) = @_;
 
@@ -366,7 +376,6 @@ sub header_hashref
      }; 
 }
 
-#------------
 
 sub modify
 {   my $self = shift;
@@ -419,7 +428,6 @@ sub fold_length
     $old;
 }
 
-#------------
 
 sub fold
 {   my ($self, $maxlen) = @_;
