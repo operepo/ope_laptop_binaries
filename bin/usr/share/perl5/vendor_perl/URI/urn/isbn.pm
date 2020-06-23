@@ -3,8 +3,6 @@ package URI::urn::isbn;  # RFC 3187
 use strict;
 use warnings;
 
-our $VERSION = '1.76';
-
 use parent 'URI::urn';
 
 use Carp qw(carp);

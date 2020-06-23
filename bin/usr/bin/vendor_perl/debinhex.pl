@@ -1,5 +1,8 @@
 #!/usr/bin/perl -w
 
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =encoding UTF-8
 
 =head1 NAME
@@ -35,11 +38,11 @@ Largely untested.
 Paul J. Schinder (NASA/GSFC) mostly, though Eryq can't seem to keep
 his grubby paws off anything...
 
-SÃ¶ren M. Andersen (somian), made it actually work under Perl 5.8.7 on MSWin32.
+Sšren M. Andersen (somian), made it actually work under Perl 5.8.7 on MSWin32.
 
 =cut
 
-our $VERSION = '1.125'; # VERSION
+our $VERSION = '1.123'; # VERSION
 
 my $The_OS;
 BEGIN { $The_OS = $^O ? $^O : q// }

@@ -5,19 +5,19 @@ use warnings;
 use bytes;
 require Exporter ;
 
-use IO::Compress::Base 2.084 ;
+use IO::Compress::Base 2.069 ;
 
-use IO::Compress::Base::Common  2.084 qw();
-use IO::Compress::Adapter::Bzip2 2.084 ;
+use IO::Compress::Base::Common  2.069 qw();
+use IO::Compress::Adapter::Bzip2 2.069 ;
 
 
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, $Bzip2Error);
 
-$VERSION = '2.084';
+$VERSION = '2.069_001';
 $Bzip2Error = '';
 
-@ISA    = qw(IO::Compress::Base Exporter);
+@ISA    = qw(Exporter IO::Compress::Base);
 @EXPORT_OK = qw( $Bzip2Error bzip2 ) ;
 %EXPORT_TAGS = %IO::Compress::Base::EXPORT_TAGS ;
 push @{ $EXPORT_TAGS{all} }, @EXPORT_OK ;
@@ -51,7 +51,7 @@ sub getExtraParams
 {
     my $self = shift ;
 
-    use IO::Compress::Base::Common  2.084 qw(:Parse);
+    use IO::Compress::Base::Common  2.069 qw(:Parse);
 
     return (
             'blocksize100k' => [IO::Compress::Base::Common::Parse_unsigned,  1],
@@ -143,6 +143,8 @@ __END__
 =head1 NAME
 
 IO::Compress::Bzip2 - Write bzip2 files/buffers
+
+
 
 =head1 SYNOPSIS
 
@@ -338,7 +340,9 @@ This parameter defaults to 0.
 
 =item C<< BinModeIn => 0|1 >>
 
-This option is now a no-op. All files will be read in binmode.
+When reading from a file or filehandle, set C<binmode> before reading.
+
+Defaults to 0.
 
 =item C<< Append => 0|1 >>
 
@@ -756,6 +760,8 @@ Same as doing this
 
     use IO::Compress::Bzip2 qw(bzip2 $Bzip2Error) ;
 
+
+
 =back
 
 =head1 EXAMPLES
@@ -770,7 +776,7 @@ See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
 =head1 SEE ALSO
 
-L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzip>, L<IO::Uncompress::UnLzip>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Compress::Zstd>, L<IO::Uncompress::UnZstd>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
+L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
 L<IO::Compress::FAQ|IO::Compress::FAQ>
 
@@ -778,13 +784,13 @@ L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
 L<IO::Zlib|IO::Zlib>
 
-The primary site for the bzip2 program is L<http://www.bzip.org>.
+The primary site for the bzip2 program is F<http://www.bzip.org>.
 
 See the module L<Compress::Bzip2|Compress::Bzip2>
 
 =head1 AUTHOR
 
-This module was written by Paul Marquess, C<pmqs@cpan.org>.
+This module was written by Paul Marquess, F<pmqs@cpan.org>.
 
 =head1 MODIFICATION HISTORY
 
@@ -792,7 +798,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2019 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2015 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

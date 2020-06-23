@@ -6,8 +6,6 @@ use warnings;
 use URI ();
 use URI::Escape qw(uri_unescape);
 
-our $VERSION = '1.76';
-
 sub query
 {
     my $self = shift;

@@ -2,15 +2,15 @@ package LWP::Protocol::http;
 
 use strict;
 
-our $VERSION = '6.44';
-
 require HTTP::Response;
 require HTTP::Status;
 require Net::HTTP;
 
-use base qw(LWP::Protocol);
+use vars qw(@ISA @EXTRA_SOCK_OPTS);
 
-our @EXTRA_SOCK_OPTS;
+require LWP::Protocol;
+@ISA = qw(LWP::Protocol);
+
 my $CRLF = "\015\012";
 
 sub _new_socket
@@ -30,7 +30,7 @@ sub _new_socket
 					Proto    => 'tcp',
 					Timeout  => $timeout,
 					KeepAlive => !!$self->{ua}{conn_cache},
-					SendTE    => $self->{ua}{send_te},
+					SendTE    => 1,
 					$self->_extra_sock_opts($host, $port),
 				       );
 
@@ -39,13 +39,10 @@ sub _new_socket
 	my $status = "Can't connect to $host:$port";
 	if ($@ =~ /\bconnect: (.*)/ ||
 	    $@ =~ /\b(Bad hostname)\b/ ||
-	    $@ =~ /\b(nodename nor servname provided, or not known)\b/ ||
 	    $@ =~ /\b(certificate verify failed)\b/ ||
 	    $@ =~ /\b(Crypt-SSLeay can't verify hostnames)\b/
 	) {
 	    $status .= " ($1)";
-	} elsif ($@) {
-	    $status .= " ($@)";
 	}
 	die "$status\n\n$@";
     }
@@ -134,7 +131,7 @@ sub request
     # check method
     my $method = $request->method;
     unless ($method =~ /^[A-Za-z0-9_!\#\$%&\'*+\-.^\`|~]+$/) {  # HTTP token
-	return HTTP::Response->new( HTTP::Status::RC_BAD_REQUEST,
+	return HTTP::Response->new( &HTTP::Status::RC_BAD_REQUEST,
 				  'Library does not allow method ' .
 				  "$method for 'http:' URLs");
     }
@@ -171,7 +168,7 @@ sub request
     my $cache_key;
     if ( $conn_cache ) {
 	$cache_key = "$host:$port";
-	# For https we reuse the socket immediately only if it has an established
+	# For https we reuse the socket immediatly only if it has an established
 	# tunnel to the target. Otherwise a CONNECT request followed by an SSL
 	# upgrade need to be done first. The request itself might reuse an
 	# existing non-ssl connection to the proxy
@@ -184,9 +181,6 @@ sub request
 		$socket->close;
 		$socket = undef;
 	    } # else use $socket
-	    else {
-		$socket->timeout($timeout);
-	    }
 	}
     }
 
@@ -236,7 +230,7 @@ sub request
     $request_headers->scan(sub {
 			       my($k, $v) = @_;
 			       $k =~ s/^://;
-			       $v =~ tr/\n/ /;
+			       $v =~ s/\n/ /g;
 			       push(@h, $k, $v);
 			   });
 
@@ -501,8 +495,7 @@ sub request
 
 
 #-----------------------------------------------------------
-package # hide from PAUSE
-    LWP::Protocol::http::SocketMethods;
+package LWP::Protocol::http::SocketMethods;
 
 sub ping {
     my $self = shift;
@@ -515,9 +508,8 @@ sub increment_response_count {
 }
 
 #-----------------------------------------------------------
-package # hide from PAUSE
-    LWP::Protocol::http::Socket;
-
-use parent -norequire, qw(LWP::Protocol::http::SocketMethods Net::HTTP);
+package LWP::Protocol::http::Socket;
+use vars qw(@ISA);
+@ISA = qw(LWP::Protocol::http::SocketMethods Net::HTTP);
 
 1;
