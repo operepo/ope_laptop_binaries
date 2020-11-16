@@ -104,6 +104,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 rem tell mgmt to finish the upgrade (re-apply security, enable student account)
+echo %ESC_GREEN%**Running finish_upgrade**%ESC_RESET%
 call !MGMT_PATH! finish_upgrade
 IF %ERRORLEVEL% NEQ 0 (
     rem Problem finishing upgrade?
