@@ -159,8 +159,7 @@ luminance = pow(original_luminance, 1.0 / gamma); // The luminance is assumed to
     SourceProxy {
         id: sourceProxy
         input: rootItem.source
-        interpolation: rootItem.smooth || (rootItem.layer.enabled && rootItem.layer.smooth)
-            ? SourceProxy.NearestInterpolation :  SourceProxy.LinearInterpolation
+        interpolation: input && input.smooth ? SourceProxy.LinearInterpolation : SourceProxy.NearestInterpolation
     }
 
     ShaderEffectSource {
@@ -180,6 +179,6 @@ luminance = pow(original_luminance, 1.0 / gamma); // The luminance is assumed to
 
         anchors.fill: parent
 
-        fragmentShader: "qrc:/qt-project.org/imports/QtGraphicalEffects/shaders/gammeadjust.frag"
+        fragmentShader: "qrc:/qt-project.org/imports/QtGraphicalEffects/shaders/gammaadjust.frag"
     }
 }
