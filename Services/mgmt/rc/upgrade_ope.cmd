@@ -130,4 +130,7 @@ rem use ping for slight pause
 set seconds=3
 rem PING -n !seconds! 127.0.0.1 >NUL 2>&1 || PING -n !seconds! ::1 >NUL 2>&1
 echo Upgrade complete.
+
+rem Run ping_smc to finish up syncing if needed
+!MGMT_PATH! ping_smc -f
 exit /b 0
