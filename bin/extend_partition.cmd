@@ -30,7 +30,7 @@ if !vol_num! == -1 (
     echo select volume !vol_num! > %tfile%
     echo extend >> %tfile%
 
-    rem diskpart /s %tfile%
+    diskpart /s %tfile%
 )
 
 exit /b
