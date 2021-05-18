@@ -2,8 +2,49 @@
 SETLOCAL ENABLEEXTENSIONS
 SETLOCAL ENABLEDELAYEDEXPANSION
 
+
+set tfile=%temp%\runasuac.vbs
+rem check if we have UAC permissions
+rem >nul 2>&1 "%SYSTEMROOT%\system32\icacls.exe" "%SYSTEMROOT%\system32\config\system"
+NET FILE 1>NUL 2>NUL
+
+rem error flag set = no admin priv
+if '%errorlevel%' NEQ '0' (
+    rem echo Not admin...
+    rem pause
+    goto switchToUAC
+) else ( goto isAlreadyUAC )
+
+echo %ESC_RED%Why are you here - this is a bug - please report it%ESC_RESET%
+pause
+
+:switchToUAC
+    echo Not UAC - Switching to UAC...
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%tfile%"
+    echo args = "/C %~s0 %*" >> "%tfile%"
+    echo For Each strArg in WScript.Arguments >> "%tfile%"
+    echo   args = args ^& strArg ^& " " >> "%tfile%"
+    echo Next >> "%tfile%"
+    echo UAC.ShellExecute "cmd", args, "", "runas", 1 >> "%tfile%"
+    
+    rem wscript "%tfile%" %*
+    wscript "%tfile%"
+    rem echo Params  %*
+    rem pause
+    exit /B
+    
+:isAlreadyUAC
+    rem echo Alread Running with UAC...
+    rem pause
+    if exist "%tfile%" ( del "%tfile%" )
+    pushd "%CD%"
+    cd /D "%~dp0"
+    rem pause
+
+
+
 rem assign a tmp file
-set tfile=%temp%\aa11aa.txt
+set partfile=%temp%\aa11aa.txt
 
 set disk=%systemdrive%
 set vol_num=-1
@@ -27,10 +68,10 @@ if !vol_num! == -1 (
 ) else (
     rem give it a go
     echo Expanding Vol: !vol_num!
-    echo select volume !vol_num! > %tfile%
-    echo extend >> %tfile%
+    echo select volume !vol_num! > %partfile%
+    echo extend >> %partfile%
 
-    diskpart /s %tfile%
+    diskpart /s %partfile%
 )
 
 exit /b
