@@ -15,7 +15,7 @@ if '%errorlevel%' NEQ '0' (
     goto switchToUAC
 ) else ( goto isAlreadyUAC )
 
-echo %ESC_RED%Why are you here - this is a bug - please report it%ESC_RESET%
+echo Why are you here - this is a bug - please report it
 pause
 
 :switchToUAC
@@ -25,7 +25,7 @@ pause
     echo For Each strArg in WScript.Arguments >> "%tfile%"
     echo   args = args ^& strArg ^& " " >> "%tfile%"
     echo Next >> "%tfile%"
-    echo UAC.ShellExecute "cmd", args, "", "runas", 1 >> "%tfile%"
+    echo UAC.ShellExecute "cmd.exe", args, "", "runas", 1 >> "%tfile%"
     
     rem wscript "%tfile%" %*
     wscript "%tfile%"
