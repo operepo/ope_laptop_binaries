@@ -74,4 +74,6 @@ if !vol_num! == -1 (
     diskpart /s %partfile%
 )
 
+echo Finished.
+pause
 exit /b
