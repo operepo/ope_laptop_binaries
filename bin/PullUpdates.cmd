@@ -114,14 +114,14 @@ rem Force us to the current HEAD (force us to update)
 echo %ESC_GREEN%Checking out changes...%ESC_RESET%
 rem Kill local changes
 rem %GIT_PATH% -C "%PROJECT_PATH%" checkout *
-%GIT_PATH% -C "%PROJECT_PATH%" checkout -fb !PULL_ORIGIN!/%GIT_BRANCH%
+%GIT_PATH% -C "%PROJECT_PATH%" checkout -fB !PULL_ORIGIN!/%GIT_BRANCH%
 rem >> nul 2>&1
 rem Reset to current HEAD
 %GIT_PATH% -C "%PROJECT_PATH%" reset --hard HEAD
 rem Delete local changed files
 rem %GIT_PATH% -C "%PROJECT_PATH%" clean -fdx
 rem Checkout current files
-%GIT_PATH% -C "%PROJECT_PATH%" checkout -fb !PULL_ORIGIN!/%GIT_BRANCH%
+%GIT_PATH% -C "%PROJECT_PATH%" checkout -fB !PULL_ORIGIN!/%GIT_BRANCH%
 
 if !ERRORLEVEL! NEQ 0 (
     echo.
