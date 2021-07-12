@@ -1,4 +1,4 @@
-rem @echo off
+@echo off
 SETLOCAL ENABLEEXTENSIONS
 SETLOCAL ENABLEDELAYEDEXPANSION
 
@@ -19,30 +19,48 @@ if [%1] EQU [] (
     echo using git branch %GIT_BRANCH%
 )
 
+rem Base folder is passed in when after it gets copied to the temp location so
+rem it knows where to target git commands
+if [%2] EQU [] (
+    SET BASE_FOLDER=%~dp0
+) else (
+    SET BASE_FOLDER=%2
+)
+
+rem Need to copy git files to a temp location
+set GIT_TEMP=%windir%\Temp\Git\
+set GIT_PATH=%GIT_TEMP%bin\git.exe
+rem make sure folder exists
+md %GIT_TEMP% 1>NUL 2>NUL
+
+rem echo %BASE_FOLDER% %GIT_TEMP%
+if /I %BASE_FOLDER%==%GIT_TEMP% (
+    echo "Copying To Temp Location... %BASE_FOLDER% -> %GIT_TEMP%"
+    echo f | xcopy /FY %BASE_FOLDER%PullUpdates.cmd %GIT_TEMP%PullUpdates.cmd
+    rem Relaunch from temp folder
+    call %GIT_TEMP%PullUpdates.cmd %1 %2
+    exit /b 0
+) else (
+    echo running from tmp folder, target: %BASE_FOLDER%
+)
 
 rem /Q for quiet, /F for full
 SET QUIET_FLAG=/Q
 
-rem Need to copy git files to a temp location
-set GIT_TEMP=%windir%\Temp\Git
-rem echo %GIT_TEMP%
-rem set GIT_PATH=%~dp0\bin\git.exe
-set GIT_PATH=%GIT_TEMP%\bin\git.exe
-md %GIT_TEMP%
 
 rem Copy git files over to temp folder
-xcopy /ECIHRKY %QUIET_FLAG% %~dp0\bin\* %GIT_TEMP%\bin\
-xcopy /ECIHRKY %QUIET_FLAG% %~dp0\cmd\* %GIT_TEMP%\cmd\
-xcopy /ECIHRKY %QUIET_FLAG% %~dp0\dev\* %GIT_TEMP%\dev\
-xcopy /ECIHRKY %QUIET_FLAG% %~dp0\mingw64\* %GIT_TEMP%\mingw64\
-xcopy /ECIHRKY %QUIET_FLAG% %~dp0\usr\* %GIT_TEMP%\usr\
+xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%bin\* %GIT_TEMP%bin\
+xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%cmd\* %GIT_TEMP%cmd\
+xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%dev\* %GIT_TEMP%dev\
+xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%mingw64\* %GIT_TEMP%mingw64\
+xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%usr\* %GIT_TEMP%usr\
 
 
 rem echo %~dp0
-chdir %~dp0/..
+chdir $BASE_FOLDER%/..
 set PROJECT_PATH=%CD%
 rem echo %PROJECT_PATH%
-cd %~dp0
+cd $BASE_FOLDER%
 
 
 echo %ESC_GREEN%Killing OPE_LMS app if running...%ESC_RESET%
@@ -112,16 +130,18 @@ if !ERRORLEVEL! NEQ 0 (
 
 rem Force us to the current HEAD (force us to update)
 echo %ESC_GREEN%Checking out changes...%ESC_RESET%
+rem Remove current master branch
+%GIT_PATH% -C "%PROJECT_PATH%" -d !PULL_ORIGIN!/%GIT_BRANCH%
 rem Kill local changes
 rem %GIT_PATH% -C "%PROJECT_PATH%" checkout *
-%GIT_PATH% -C "%PROJECT_PATH%" checkout -fB !PULL_ORIGIN!/%GIT_BRANCH%
+%GIT_PATH% -C "%PROJECT_PATH%" checkout -f -B %GIT_BRANCH% !PULL_ORIGIN!/%GIT_BRANCH%
 rem >> nul 2>&1
 rem Reset to current HEAD
-%GIT_PATH% -C "%PROJECT_PATH%" reset --hard HEAD
+%GIT_PATH% -C "%PROJECT_PATH%" reset --hard !PULL_ORIGIN!/%GIT_BRANCH%
 rem Delete local changed files
 rem %GIT_PATH% -C "%PROJECT_PATH%" clean -fdx
 rem Checkout current files
-%GIT_PATH% -C "%PROJECT_PATH%" checkout -fB !PULL_ORIGIN!/%GIT_BRANCH%
+%GIT_PATH% -C "%PROJECT_PATH%" checkout -f -B %GIT_BRANCH% !PULL_ORIGIN!/%GIT_BRANCH%
 
 if !ERRORLEVEL! NEQ 0 (
     echo.
