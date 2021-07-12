@@ -1,5 +1,7 @@
 @echo off
 
+call PullUpdates.cmd %1 %2
+exit /b 0
 REM Make sure we are in the root project folder
 cd %~dp0
 cd ..
