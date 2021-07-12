@@ -33,31 +33,29 @@ set GIT_PATH=%GIT_TEMP%bin\git.exe
 rem make sure folder exists
 md %GIT_TEMP% 1>NUL 2>NUL
 
-rem echo %BASE_FOLDER% %GIT_TEMP%
-if /I %BASE_FOLDER%==%GIT_TEMP% (
-    echo "Copying To Temp Location... %BASE_FOLDER% -> %GIT_TEMP%"
-    echo f | xcopy /FY %BASE_FOLDER%PullUpdates.cmd %GIT_TEMP%PullUpdates.cmd
+rem /Q for quiet, /F for full
+SET QUIET_FLAG=/Q
+
+echo %~dp0 %BASE_FOLDER% %GIT_TEMP%
+if /I NOT "%~dp0"=="%GIT_TEMP%" (
+    echo Copying To Temp Location... %BASE_FOLDER% to %GIT_TEMP%
+    echo f | xcopy /FY %BASE_FOLDER%PullUpdates.cmd %GIT_TEMP%PullUpdates.cmd 1>NUL 2>NUL
+    rem Copy git files over to temp folder
+    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%bin\* %GIT_TEMP%bin\
+    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%cmd\* %GIT_TEMP%cmd\
+    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%dev\* %GIT_TEMP%dev\
+    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%mingw64\* %GIT_TEMP%mingw64\
+    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%usr\* %GIT_TEMP%usr\
     rem Relaunch from temp folder
-    call %GIT_TEMP%PullUpdates.cmd %1 %2
+    call %GIT_TEMP%PullUpdates.cmd %GIT_BRANCH% %BASE_FOLDER%
     exit /b 0
 ) else (
     echo running from tmp folder, target: %BASE_FOLDER%
 )
 
-rem /Q for quiet, /F for full
-SET QUIET_FLAG=/Q
-
-
-rem Copy git files over to temp folder
-xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%bin\* %GIT_TEMP%bin\
-xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%cmd\* %GIT_TEMP%cmd\
-xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%dev\* %GIT_TEMP%dev\
-xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%mingw64\* %GIT_TEMP%mingw64\
-xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%usr\* %GIT_TEMP%usr\
-
 
 rem echo %~dp0
-chdir $BASE_FOLDER%/..
+chdir $BASE_FOLDER%..
 set PROJECT_PATH=%CD%
 rem echo %PROJECT_PATH%
 cd $BASE_FOLDER%
