@@ -55,10 +55,10 @@ if /I NOT "%~dp0"=="%GIT_TEMP%" (
 
 
 rem echo %~dp0
-chdir $BASE_FOLDER%..
+chdir %BASE_FOLDER%\..
 set PROJECT_PATH=%CD%
-rem echo %PROJECT_PATH%
-cd $BASE_FOLDER%
+echo %PROJECT_PATH%
+cd %BASE_FOLDER%
 
 
 echo %ESC_GREEN%Killing OPE_LMS app if running...%ESC_RESET%
