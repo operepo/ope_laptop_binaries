@@ -129,7 +129,7 @@ if !ERRORLEVEL! NEQ 0 (
 rem Force us to the current HEAD (force us to update)
 echo %ESC_GREEN%Checking out changes...%ESC_RESET%
 rem Remove current master branch
-%GIT_PATH% -C "%PROJECT_PATH%" branch -d !PULL_ORIGIN!/%GIT_BRANCH%
+%GIT_PATH% -C "%PROJECT_PATH%" branch -d !PULL_ORIGIN!/%GIT_BRANCH%  1>NUL 2>NUL
 rem Kill local changes
 rem %GIT_PATH% -C "%PROJECT_PATH%" checkout *
 %GIT_PATH% -C "%PROJECT_PATH%" checkout -f -B %GIT_BRANCH% !PULL_ORIGIN!/%GIT_BRANCH%
