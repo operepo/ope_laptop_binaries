@@ -126,7 +126,8 @@ if %ERRORLEVEL% NEQ 0 (
 
 
 rem ---- MSVC 2013 ----
-set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\4BB91BBAD8382803DB4A786C0614182A
+set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\6E8D947A316B3EB3F8F540C548BE2AB9
+rem 4BB91BBAD8382803DB4A786C0614182A
 rem CE6380BC270BD863282B3D74B09F7570
 set MSVC_VERSION=MSVC 2013 x64
 set MSG=%ESC_GREEN%---- Checking install of !MSVC_VERSION!... ----%ESC_RESET%
@@ -139,7 +140,8 @@ if %ERRORLEVEL% NEQ 0 (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
 
-set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\3E8F7AED9B7BC3C349B5F7C89E407184
+set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\21EE4A31AE32173319EEFE3BD6FDFFE3
+rem 3E8F7AED9B7BC3C349B5F7C89E407184
 rem 21EE4A31AE32173319EEFE3BD6FDFFE3
 set MSVC_VERSION=MSVC 2013 x86
 set MSG=%ESC_GREEN%---- Checking install of !MSVC_VERSION!... ----%ESC_RESET%
@@ -154,27 +156,31 @@ if %ERRORLEVEL% NEQ 0 (
 
 
 
-rem ---- MSVC 2015-2019 ----
-set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\4891423FE0A523640952AA610E87A0B4
-set MSVC_VERSION=MSVC 2015-2019 x64
+rem ---- MSVC 2015-2022 ----
+rem 2015-2019 4891423FE0A523640952AA610E87A0B4
+rem 2015-2022 203A181AD6F3DAB4798A4A626A94D987
+set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\203A181AD6F3DAB4798A4A626A94D987
+set MSVC_VERSION=MSVC 2015-2022 x64
 set MSG=%ESC_GREEN%---- Checking install of !MSVC_VERSION!... ----%ESC_RESET%
 echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vc_redist.x64_15_to_19.exe /install /quiet /norestart
+ call %~dp0VC_redist.x64_15_to_22.exe /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
 
-set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\1AF6F69BF0351F24F917335C38173604
-set MSVC_VERSION=MSVC 2015-2019 x86
+rem 2015-2019 1AF6F69BF0351F24F917335C38173604
+rem 2015-2022 FFF3E997C507F1644B00D62E37893B5E
+set REG_KEY=HKLM\SOFTWARE\Classes\Installer\Products\FFF3E997C507F1644B00D62E37893B5E
+set MSVC_VERSION=MSVC 2015-2022 x86
 set MSG=%ESC_GREEN%---- Checking install of !MSVC_VERSION!... ----%ESC_RESET%
 echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vc_redist.x86_15_to_19.exe /install /quiet /norestart
+ call %~dp0VC_redist.x86_15_to_22.exe /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
