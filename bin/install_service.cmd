@@ -16,6 +16,9 @@ if %ERRORLEVEL% NEQ 0 (
     echo %ESC_YELLOW%STOP OPEService Failed - This isn't an issue if it is the first time you are credentialing this laptop. %ESC_RESET%
 )
 
+rem Add win defender exclusion for our ope folder
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& {Add-MpPreference -ExclusionPath '%PROGRAMDATA%\ope'}"
+
 echo %ESC_GREEN%UnRegistering OPEService...%ESC_RESET%
 %programdata%\ope\Services\OPEService\OPEService.exe remove
 rem if %ERRORLEVEL% NEQ 0 (
