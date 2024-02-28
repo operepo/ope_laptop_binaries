@@ -11,6 +11,8 @@ use URI::Escape qw(uri_unescape);
 use overload '""' => sub { $_[0]->[0] },
              fallback => 1;
 
+our $VERSION = '5.21';
+
 sub new
 {
     my $class = shift;

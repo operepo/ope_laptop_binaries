@@ -19,7 +19,3 @@
 # localhost name resolution is handled within DNS itself.
 #	127.0.0.1       localhost
 #	::1             localhost
-
-
-#192.168.10.26	smc.ed.dev admin.ed.dev canvas.ed.dev jsbin.ed.dev codecombat.ed.dev fog.ed.dev
-#10.1.101.56	smc.ed.dev admin.ed.dev canvas.ed.dev jsbin.ed.dev codecombat.ed.dev fog.ed.dev

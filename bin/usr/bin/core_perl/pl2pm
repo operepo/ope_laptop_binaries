@@ -1,6 +1,6 @@
 #!/usr/bin/perl
     eval 'exec /usr/bin/perl -S $0 ${1+"$@"}'
-	if $running_under_some_shell;
+	if 0; # ^ Run only under a shell
 
 =head1 NAME
 
@@ -79,7 +79,7 @@ while (<>) {
 	s/\$\[/0/g;
     }
     s/open\s+(\w+)/open($1)/g;
-
+ 
     my $export_ok = '';
     my $carp      ='';
 
@@ -93,7 +93,7 @@ while (<>) {
 	$export_ok = "\@EXPORT_OK = qw(@export_ok);\n";
     }
 
-    if ( open(PM, ">$newname") ) {
+    if ( open(PM, ">", $newname) ) {
         print PM <<"END";
 package $newpack;
 use 5.006;

@@ -8,6 +8,8 @@ use URI ();
 
 use overload '""' => sub { shift->as_string };
 
+our $VERSION = '5.21';
+
 sub new {
     my($class, $uri, $scheme) = @_;
     utf8::upgrade($uri);

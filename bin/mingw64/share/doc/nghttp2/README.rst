@@ -4,24 +4,21 @@ nghttp2 - HTTP/2 C Library
 This is an implementation of the Hypertext Transfer Protocol version 2
 in C.
 
-The framing layer of HTTP/2 is implemented as a reusable C
-library.  On top of that, we have implemented an HTTP/2 client, server
-and proxy.  We have also developed load test and benchmarking tools for
-HTTP/2 and SPDY.
+The framing layer of HTTP/2 is implemented as a reusable C library.
+On top of that, we have implemented an HTTP/2 client, server and
+proxy.  We have also developed load test and benchmarking tools for
+HTTP/2.
 
 An HPACK encoder and decoder are available as a public API.
-
-An experimental high level C++ library is also available.
-
-We have Python bindings of this library, but we do not have full
-code coverage yet.
 
 Development Status
 ------------------
 
-We have implemented `RFC 7540 <https://tools.ietf.org/html/rfc7540>`_
-HTTP/2 and `RFC 7541 <https://tools.ietf.org/html/rfc7541>`_ HPACK -
-Header Compression for HTTP/2
+nghttp2 was originally developed based on `RFC 7540
+<https://tools.ietf.org/html/rfc7540>`_ HTTP/2 and `RFC 7541
+<https://tools.ietf.org/html/rfc7541>`_ HPACK - Header Compression for
+HTTP/2.  Now we are updating our code to implement `RFC 9113
+<https://datatracker.ietf.org/doc/html/rfc9113>`_.
 
 The nghttp2 code base was forked from the spdylay
 (https://github.com/tatsuhiro-t/spdylay) project.
@@ -32,11 +29,13 @@ Public Test Server
 The following endpoints are available to try out our nghttp2
 implementation.
 
-* https://nghttp2.org/ (TLS + ALPN/NPN)
+* https://nghttp2.org/ (TLS + ALPN and HTTP/3)
 
-  This endpoint supports ``h2``, ``h2-16``, ``h2-14``, ``spdy/3.1``
-  and ``http/1.1`` via ALPN/NPN and requires TLSv1.2 for HTTP/2
+  This endpoint supports ``h2``, ``h2-16``, ``h2-14``, and
+  ``http/1.1`` via ALPN and requires TLSv1.2 for HTTP/2
   connection.
+
+  It also supports HTTP/3.
 
 * http://nghttp2.org/ (HTTP Upgrade and HTTP/2 Direct)
 
@@ -67,27 +66,16 @@ To build and run the application programs (``nghttp``, ``nghttpd``,
 ``nghttpx`` and ``h2load``) in the ``src`` directory, the following packages
 are required:
 
-* OpenSSL >= 1.0.1
+* OpenSSL >= 1.1.1; or LibreSSL >= 3.8.1; or aws-lc >= 1.19.0; or
+  BoringSSL
 * libev >= 4.11
 * zlib >= 1.2.3
 * libc-ares >= 1.7.5
 
-ALPN support requires OpenSSL >= 1.0.2 (released 22 January 2015).
-LibreSSL >= 2.2.0 can be used instead of OpenSSL, but OpenSSL has more
-features than LibreSSL at the time of this writing.
-
-To enable the SPDY protocol in the application program ``nghttpx`` and
-``h2load``, the following package is required:
-
-* spdylay >= 1.3.2
-
-We no longer recommend to build nghttp2 with SPDY protocol support
-enabled.  SPDY support will be removed soon.
-
 To enable ``-a`` option (getting linked assets from the downloaded
 resource) in ``nghttp``, the following package is required:
 
-* libxml2 >= 2.7.7
+* libxml2 >= 2.6.26
 
 To enable systemd support in nghttpx, the following package is
 required:
@@ -112,35 +100,10 @@ To mitigate heap fragmentation in long running server programs
      Alpine Linux currently does not support malloc replacement
      due to musl limitations. See details in issue `#762 <https://github.com/nghttp2/nghttp2/issues/762>`_.
 
-libnghttp2_asio C++ library requires the following packages:
-
-* libboost-dev >= 1.54.0
-* libboost-thread-dev >= 1.54.0
-
-The Python bindings require the following packages:
-
-* cython >= 0.19
-* python >= 2.7
-* python-setuptools
-
-If you are using Ubuntu 16.04 LTS (Xenial Xerus) or Debian 8 (jessie)
-and above, run the following to install the required packages:
-
-.. code-block:: text
-
-    sudo apt-get install g++ make binutils autoconf automake autotools-dev libtool pkg-config \
-      zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libevent-dev libjansson-dev \
-      libc-ares-dev libjemalloc-dev libsystemd-dev libspdylay-dev \
-      cython python3-dev python-setuptools
-
-Since Ubuntu 15.10, spdylay has been available as a package named
-`libspdylay-dev`.  For the earlier Ubuntu release, you need to build
-it yourself: http://tatsuhiro-t.github.io/spdylay/
-
 To enable mruby support for nghttpx, `mruby
 <https://github.com/mruby/mruby>`_ is required.  We need to build
 mruby with C++ ABI explicitly turned on, and probably need other
-mrgems, mruby is manged by git submodule under third-party/mruby
+mrgems, mruby is managed by git submodule under third-party/mruby
 directory.  Currently, mruby support for nghttpx is disabled by
 default.  To enable mruby support, use ``--with-mruby`` configure
 option.  Note that at the time of this writing, libmruby-dev and mruby
@@ -152,13 +115,43 @@ required:
 * bison
 
 nghttpx supports `neverbleed <https://github.com/h2o/neverbleed>`_,
-privilege separation engine for OpenSSL / LibreSSL.  In short, it
-minimizes the risk of private key leakage when serious bug like
-Heartbleed is exploited.  The neverbleed is disabled by default.  To
-enable it, use ``--with-neverbleed`` configure option.
+privilege separation engine for OpenSSL.  In short, it minimizes the
+risk of private key leakage when serious bug like Heartbleed is
+exploited.  The neverbleed is disabled by default.  To enable it, use
+``--with-neverbleed`` configure option.
 
-In ordre to compile the source code, gcc >= 4.8.3 or clang >= 3.4 is
-required.
+To enable the experimental HTTP/3 support for h2load and nghttpx, the
+following libraries are required:
+
+* `OpenSSL with QUIC support
+  <https://github.com/quictls/openssl/tree/OpenSSL_1_1_1w+quic>`_; or
+  LibreSSL (does not support 0RTT); or aws-lc; or
+  `BoringSSL <https://boringssl.googlesource.com/boringssl/>`_ (commit
+  f42be90d665b6a376177648ccbb76fbbd6497c13)
+* `ngtcp2 <https://github.com/ngtcp2/ngtcp2>`_ >= 1.0.0
+* `nghttp3 <https://github.com/ngtcp2/nghttp3>`_ >= 1.1.0
+
+Use ``--enable-http3`` configure option to enable HTTP/3 feature for
+h2load and nghttpx.
+
+In order to build optional eBPF program to direct an incoming QUIC UDP
+datagram to a correct socket for nghttpx, the following libraries are
+required:
+
+* libbpf-dev >= 0.7.0
+
+Use ``--with-libbpf`` configure option to build eBPF program.
+libelf-dev is needed to build libbpf.
+
+For Ubuntu 20.04, you can build libbpf from `the source code
+<https://github.com/libbpf/libbpf/releases/tag/v1.3.0>`_.  nghttpx
+requires eBPF program for reloading its configuration and hot swapping
+its executable.
+
+Compiling libnghttp2 C source code requires a C99 compiler.  gcc 4.8
+is known to be adequate.  In order to compile the C++ source code, gcc
+>= 6.0 or clang >= 6.0 is required.  C++ source code requires C++14
+language features.
 
 .. note::
 
@@ -204,6 +197,18 @@ required.
    specified, pkg-config is not used for detection, and user is
    responsible to specify the correct values to these variables.  For
    complete list of these variables, run ``./configure -h``.
+
+If you are using Ubuntu 22.04 LTS, run the following to install the
+required packages:
+
+.. code-block:: text
+
+    sudo apt-get install g++ clang make binutils autoconf automake \
+      autotools-dev libtool pkg-config \
+      zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev \
+      libevent-dev libjansson-dev \
+      libc-ares-dev libjemalloc-dev libsystemd-dev \
+      ruby-dev bison libelf-dev
 
 Building nghttp2 from release tar archive
 -----------------------------------------
@@ -317,6 +322,87 @@ The generated documents will not be installed with ``make install``.
 The online documentation is available at
 https://nghttp2.org/documentation/
 
+Build HTTP/3 enabled h2load and nghttpx
+---------------------------------------
+
+To build h2load and nghttpx with HTTP/3 feature enabled, run the
+configure script with ``--enable-http3``.
+
+For nghttpx to reload configurations and swapping its executable while
+gracefully terminating old worker processes, eBPF is required.  Run
+the configure script with ``--enable-http3 --with-libbpf`` to build
+eBPF program.  The QUIC keying material must be set with
+``--frontend-quic-secret-file`` in order to keep the existing
+connections alive during reload.
+
+The detailed steps to build HTTP/3 enabled h2load and nghttpx follow.
+
+Build custom OpenSSL:
+
+.. code-block:: text
+
+   $ git clone --depth 1 -b OpenSSL_1_1_1w+quic https://github.com/quictls/openssl
+   $ cd openssl
+   $ ./config --prefix=$PWD/build --openssldir=/etc/ssl
+   $ make -j$(nproc)
+   $ make install_sw
+   $ cd ..
+
+Build nghttp3:
+
+.. code-block:: text
+
+   $ git clone --depth 1 -b v1.1.0 https://github.com/ngtcp2/nghttp3
+   $ cd nghttp3
+   $ autoreconf -i
+   $ ./configure --prefix=$PWD/build --enable-lib-only
+   $ make -j$(nproc)
+   $ make install
+   $ cd ..
+
+Build ngtcp2:
+
+.. code-block:: text
+
+   $ git clone --depth 1 -b v1.2.0 https://github.com/ngtcp2/ngtcp2
+   $ cd ngtcp2
+   $ autoreconf -i
+   $ ./configure --prefix=$PWD/build --enable-lib-only \
+         PKG_CONFIG_PATH="$PWD/../openssl/build/lib/pkgconfig"
+   $ make -j$(nproc)
+   $ make install
+   $ cd ..
+
+If your Linux distribution does not have libbpf-dev >= 0.7.0, build
+from source:
+
+.. code-block:: text
+
+   $ git clone --depth 1 -b v1.3.0 https://github.com/libbpf/libbpf
+   $ cd libbpf
+   $ PREFIX=$PWD/build make -C src install
+   $ cd ..
+
+Build nghttp2:
+
+.. code-block:: text
+
+   $ git clone https://github.com/nghttp2/nghttp2
+   $ cd nghttp2
+   $ git submodule update --init
+   $ autoreconf -i
+   $ ./configure --with-mruby --with-neverbleed --enable-http3 --with-libbpf \
+         CC=clang-14 CXX=clang++-14 \
+         PKG_CONFIG_PATH="$PWD/../openssl/build/lib/pkgconfig:$PWD/../nghttp3/build/lib/pkgconfig:$PWD/../ngtcp2/build/lib/pkgconfig:$PWD/../libbpf/build/lib64/pkgconfig" \
+         LDFLAGS="$LDFLAGS -Wl,-rpath,$PWD/../openssl/build/lib -Wl,-rpath,$PWD/../libbpf/build/lib64"
+   $ make -j$(nproc)
+
+The eBPF program ``reuseport_kern.o`` should be found under bpf
+directory.  Pass ``--quic-bpf-program-file=bpf/reuseport_kern.o``
+option to nghttpx to load it.  See also `HTTP/3 section in nghttpx -
+HTTP/2 proxy - HOW-TO
+<https://nghttp2.org/documentation/nghttpx-howto.html#http-3>`_.
+
 Unit tests
 ----------
 
@@ -332,14 +418,8 @@ its testing framework.  We depend on the following libraries:
 * golang.org/x/net/http2
 * golang.org/x/net/websocket
 * https://github.com/tatsuhiro-t/go-nghttp2
-* https://github.com/tatsuhiro-t/spdy
 
-To download the above packages, after settings ``GOPATH``, run the
-following command under ``integration-tests`` directory:
-
-.. code-block:: text
-
-    $ make itprep
+Go modules will download these dependencies automatically.
 
 To run the tests, run the following command under
 ``integration-tests`` directory:
@@ -349,11 +429,6 @@ To run the tests, run the following command under
     $ make it
 
 Inside the tests, we use port 3009 to run the test subject server.
-
-.. note::
-
-   github.com/tatsuhiro-t/spdy is a copy used to be available at
-   golang.org/x/net/spdy, but it is now gone.
 
 Migration from v0.7.15 or earlier
 ---------------------------------
@@ -462,7 +537,7 @@ nghttp - client
 +++++++++++++++
 
 ``nghttp`` is a HTTP/2 client.  It can connect to the HTTP/2 server
-with prior knowledge, HTTP Upgrade and NPN/ALPN TLS extension.
+with prior knowledge, HTTP Upgrade and ALPN TLS extension.
 
 It has verbose output mode for framing information.  Here is sample
 output from ``nghttp`` client:
@@ -688,8 +763,8 @@ nghttpd - server
 By default, it uses SSL/TLS connection.  Use ``--no-tls`` option to
 disable it.
 
-``nghttpd`` only accepts HTTP/2 connections via NPN/ALPN or direct
-HTTP/2 connections.  No HTTP Upgrade is supported.
+``nghttpd`` only accepts HTTP/2 connections via ALPN or direct HTTP/2
+connections.  No HTTP Upgrade is supported.
 
 The ``-p`` option allows users to configure server push.
 
@@ -755,7 +830,7 @@ information.  Here is sample output from ``nghttpd``:
 nghttpx - proxy
 +++++++++++++++
 
-``nghttpx`` is a multi-threaded reverse proxy for HTTP/2, SPDY and
+``nghttpx`` is a multi-threaded reverse proxy for HTTP/3, HTTP/2, and
 HTTP/1.1, and powers http://nghttp2.org and supports HTTP/2 server
 push.
 
@@ -770,31 +845,30 @@ to know how to migrate from earlier releases.
 ``nghttpx`` implements `important performance-oriented features
 <https://istlsfastyet.com/#server-performance>`_ in TLS, such as
 session IDs, session tickets (with automatic key rotation), OCSP
-stapling, dynamic record sizing, ALPN/NPN, forward secrecy and SPDY &
-HTTP/2.  ``nghttpx`` also offers the functionality to share session
-cache and ticket keys among multiple ``nghttpx`` instances via
-memcached.
+stapling, dynamic record sizing, ALPN, forward secrecy and HTTP/2.
+``nghttpx`` also offers the functionality to share session cache and
+ticket keys among multiple ``nghttpx`` instances via memcached.
 
 ``nghttpx`` has 2 operation modes:
 
-================== ====================== ================ =============
-Mode option        Frontend               Backend          Note
-================== ====================== ================ =============
-default mode       HTTP/2, SPDY, HTTP/1.1 HTTP/1.1, HTTP/2 Reverse proxy
-``--http2-proxy``  HTTP/2, SPDY, HTTP/1.1 HTTP/1.1, HTTP/2 Forward proxy
-================== ====================== ================ =============
+================== ======================== ================ =============
+Mode option        Frontend                 Backend          Note
+================== ======================== ================ =============
+default mode       HTTP/3, HTTP/2, HTTP/1.1 HTTP/1.1, HTTP/2 Reverse proxy
+``--http2-proxy``  HTTP/3, HTTP/2, HTTP/1.1 HTTP/1.1, HTTP/2 Forward proxy
+================== ======================== ================ =============
 
 The interesting mode at the moment is the default mode.  It works like
-a reverse proxy and listens for HTTP/2, SPDY and HTTP/1.1 and can be
-deployed as a SSL/TLS terminator for existing web server.
+a reverse proxy and listens for HTTP/3, HTTP/2, and HTTP/1.1 and can
+be deployed as a SSL/TLS terminator for existing web server.
 
 In all modes, the frontend connections are encrypted by SSL/TLS by
 default.  To disable encryption, use the ``no-tls`` keyword in
-``--frontend`` option.  If encryption is disabled, SPDY is disabled in
-the frontend and incoming HTTP/1.1 connections can be upgraded to
-HTTP/2 through HTTP Upgrade.  On the other hard, backend connections
-are not encrypted by default.  To encrypt backend connections, use
-``tls`` keyword in ``--backend`` option.
+``--frontend`` option.  If encryption is disabled, incoming HTTP/1.1
+connections can be upgraded to HTTP/2 through HTTP Upgrade.  On the
+other hard, backend connections are not encrypted by default.  To
+encrypt backend connections, use ``tls`` keyword in ``--backend``
+option.
 
 ``nghttpx`` supports a configuration file.  See the ``--conf`` option and
 sample configuration file ``nghttpx.conf.sample``.
@@ -804,16 +878,16 @@ server:
 
 .. code-block:: text
 
-    Client <-- (HTTP/2, SPDY, HTTP/1.1) --> nghttpx <-- (HTTP/1.1, HTTP/2) --> Web Server
-                                          [reverse proxy]
+    Client <-- (HTTP/3, HTTP/2, HTTP/1.1) --> nghttpx <-- (HTTP/1.1, HTTP/2) --> Web Server
+                                            [reverse proxy]
 
 With the ``--http2-proxy`` option, it works as forward proxy, and it
-is so called secure HTTP/2 proxy (aka SPDY proxy):
+is so called secure HTTP/2 proxy:
 
 .. code-block:: text
 
-    Client <-- (HTTP/2, SPDY, HTTP/1.1) --> nghttpx <-- (HTTP/1.1) --> Proxy
-                                           [secure proxy]          (e.g., Squid, ATS)
+    Client <-- (HTTP/3, HTTP/2, HTTP/1.1) --> nghttpx <-- (HTTP/1.1) --> Proxy
+                                             [secure proxy]          (e.g., Squid, ATS)
 
 The ``Client`` in the above example needs to be configured to use
 ``nghttpx`` as secure proxy.
@@ -845,7 +919,7 @@ proxy through an HTTP proxy:
 
 .. code-block:: text
 
-    Client <-- (HTTP/2, SPDY, HTTP/1.1) --> nghttpx <-- (HTTP/2) --
+    Client <-- (HTTP/3, HTTP/2, HTTP/1.1) --> nghttpx <-- (HTTP/2) --
 
             --===================---> HTTP/2 Proxy
               (HTTP proxy tunnel)     (e.g., nghttpx -s)
@@ -853,9 +927,8 @@ proxy through an HTTP proxy:
 Benchmarking tool
 -----------------
 
-The ``h2load`` program is a benchmarking tool for HTTP/2 and SPDY.
-The SPDY support is enabled if the program was built with the spdylay
-library.  The UI of ``h2load`` is heavily inspired by ``weighttp``
+The ``h2load`` program is a benchmarking tool for HTTP/3, HTTP/2, and
+HTTP/1.1.  The UI of ``h2load`` is heavily inspired by ``weighttp``
 (https://github.com/lighttpd/weighttp).  The typical usage is as
 follows:
 
@@ -897,6 +970,17 @@ threads to avoid saturating a single core on client side.
    **Don't use this tool against publicly available servers.** That is
    considered a DOS attack.  Please only use it against your private
    servers.
+
+If the experimental HTTP/3 is enabled, h2load can send requests to
+HTTP/3 server.  To do this, specify ``h3`` to ``--alpn-list`` option
+like so:
+
+.. code-block:: text
+
+    $ h2load --alpn-list h3 https://127.0.0.1:4433
+
+For nghttp2 v1.58 or earlier, use ``--npn-list`` instead of
+``--alpn-list``.
 
 HPACK tools
 -----------
@@ -971,7 +1055,7 @@ output_length
     The length of the compressed header block.
 
 percentage_of_original_size
-    ``input_length`` / ``output_length`` * 100
+    ``output_length`` / ``input_length`` * 100
 
 wire
     The compressed header block as a hex string.
@@ -1335,219 +1419,6 @@ associated value includes the state of the dynamic header table after the
 corresponding header set was processed.  The format is the same as
 ``deflatehd``.
 
-libnghttp2_asio: High level HTTP/2 C++ library
-----------------------------------------------
-
-libnghttp2_asio is C++ library built on top of libnghttp2 and provides
-high level abstraction API to build HTTP/2 applications.  It depends
-on the Boost::ASIO library and OpenSSL.  Currently libnghttp2_asio
-provides both client and server APIs.
-
-libnghttp2_asio is not built by default.  Use the ``--enable-asio-lib``
-configure flag to build libnghttp2_asio.  The required Boost libraries
-are:
-
-* Boost::Asio
-* Boost::System
-* Boost::Thread
-
-The server API is designed to build an HTTP/2 server very easily to utilize
-C++11 anonymous functions and closures.  The bare minimum example of
-an HTTP/2 server looks like this:
-
-.. code-block:: cpp
-
-    #include <iostream>
-
-    #include <nghttp2/asio_http2_server.h>
-
-    using namespace nghttp2::asio_http2;
-    using namespace nghttp2::asio_http2::server;
-
-    int main(int argc, char *argv[]) {
-      boost::system::error_code ec;
-      http2 server;
-
-      server.handle("/", [](const request &req, const response &res) {
-        res.write_head(200);
-        res.end("hello, world\n");
-      });
-
-      if (server.listen_and_serve(ec, "localhost", "3000")) {
-        std::cerr << "error: " << ec.message() << std::endl;
-      }
-    }
-
-Here is sample code to use the client API:
-
-.. code-block:: cpp
-
-    #include <iostream>
-
-    #include <nghttp2/asio_http2_client.h>
-
-    using boost::asio::ip::tcp;
-
-    using namespace nghttp2::asio_http2;
-    using namespace nghttp2::asio_http2::client;
-
-    int main(int argc, char *argv[]) {
-      boost::system::error_code ec;
-      boost::asio::io_service io_service;
-
-      // connect to localhost:3000
-      session sess(io_service, "localhost", "3000");
-
-      sess.on_connect([&sess](tcp::resolver::iterator endpoint_it) {
-        boost::system::error_code ec;
-
-        auto req = sess.submit(ec, "GET", "http://localhost:3000/");
-
-        req->on_response([](const response &res) {
-          // print status code and response header fields.
-          std::cerr << "HTTP/2 " << res.status_code() << std::endl;
-          for (auto &kv : res.header()) {
-            std::cerr << kv.first << ": " << kv.second.value << "\n";
-          }
-          std::cerr << std::endl;
-
-          res.on_data([](const uint8_t *data, std::size_t len) {
-            std::cerr.write(reinterpret_cast<const char *>(data), len);
-            std::cerr << std::endl;
-          });
-        });
-
-        req->on_close([&sess](uint32_t error_code) {
-          // shutdown session after first request was done.
-          sess.shutdown();
-        });
-      });
-
-      sess.on_error([](const boost::system::error_code &ec) {
-        std::cerr << "error: " << ec.message() << std::endl;
-      });
-
-      io_service.run();
-    }
-
-For more details, see the documentation of libnghttp2_asio.
-
-Python bindings
----------------
-
-The ``python`` directory contains nghttp2 Python bindings.  The
-bindings currently provide HPACK compressor and decompressor classes
-and an HTTP/2 server.
-
-The extension module is called ``nghttp2``.
-
-``make`` will build the bindings and target Python version is
-determined by the ``configure`` script.  If the detected Python version is not
-what you expect, specify a path to Python executable in a ``PYTHON``
-variable as an argument to configure script (e.g., ``./configure
-PYTHON=/usr/bin/python3.5``).
-
-The following example code illustrates basic usage of the HPACK compressor
-and decompressor in Python:
-
-.. code-block:: python
-
-    import binascii
-    import nghttp2
-
-    deflater = nghttp2.HDDeflater()
-    inflater = nghttp2.HDInflater()
-
-    data = deflater.deflate([(b'foo', b'bar'),
-                             (b'baz', b'buz')])
-    print(binascii.b2a_hex(data))
-
-    hdrs = inflater.inflate(data)
-    print(hdrs)
-
-The ``nghttp2.HTTP2Server`` class builds on top of the asyncio event
-loop.  On construction, *RequestHandlerClass* must be given, which
-must be a subclass of ``nghttp2.BaseRequestHandler`` class.
-
-The ``BaseRequestHandler`` class is used to handle the HTTP/2 stream.
-By default, it does nothing.  It must be subclassed to handle each
-event callback method.
-
-The first callback method invoked is ``on_headers()``.  It is called
-when HEADERS frame, which includes the request header fields, has arrived.
-
-If the request has a request body, ``on_data(data)`` is invoked for each
-chunk of received data.
-
-Once the entire request is received, ``on_request_done()`` is invoked.
-
-When the stream is closed, ``on_close(error_code)`` is called.
-
-The application can send a response using ``send_response()`` method.
-It can be used in ``on_headers()``, ``on_data()`` or
-``on_request_done()``.
-
-The application can push resources using the ``push()`` method.  It must be
-used before the ``send_response()`` call.
-
-The following instance variables are available:
-
-client_address
-    Contains a tuple of the form (host, port) referring to the
-    client's address.
-
-stream_id
-    Stream ID of this stream.
-
-scheme
-    Scheme of the request URI.  This is a value of :scheme header
-    field.
-
-method
-    Method of this stream.  This is a value of :method header field.
-
-host
-    This is a value of :authority or host header field.
-
-path
-    This is a value of :path header field.
-
-The following example illustrates the HTTP2Server and
-BaseRequestHandler usage:
-
-.. code-block:: python
-
-    #!/usr/bin/env python
-
-    import io, ssl
-    import nghttp2
-
-    class Handler(nghttp2.BaseRequestHandler):
-
-        def on_headers(self):
-            self.push(path='/css/bootstrap.css',
-                      request_headers = [('content-length', '3')],
-                      status=200,
-                      body='foo')
-
-            self.push(path='/js/bootstrap.js',
-                      method='GET',
-                      request_headers = [('content-length', '10')],
-                      status=200,
-                      body='foobarbuzz')
-
-            self.send_response(status=200,
-                               headers = [('content-type', 'text/plain')],
-                               body=io.BytesIO(b'nghttp2-python FTW'))
-
-    ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    ctx.options = ssl.OP_ALL | ssl.OP_NO_SSLv2
-    ctx.load_cert_chain('server.crt', 'server.key')
-
-    # give None to ssl to make the server non-SSL/TLS
-    server = nghttp2.HTTP2Server(('127.0.0.1', 8443), Handler, ssl=ctx)
-    server.serve_forever()
-
 Contribution
 ------------
 
@@ -1586,12 +1457,10 @@ released, or mitigation is worked out.
 
 In the future, we may setup a dedicated mail address for this purpose.
 
-Release schedule
-----------------
+Versioning
+----------
 
-In general, we follow `Semantic Versioning <http://semver.org/>`_.  We
-release MINOR version update every month, and usually we ship it
-around 25th day of every month.
+In general, we follow `Semantic Versioning <http://semver.org/>`_.
 
 We may release PATCH releases between the regular releases, mainly for
 severe security bug fixes.

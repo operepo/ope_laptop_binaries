@@ -3,9 +3,11 @@
 exec tclsh "$0" ${1+"$@"}
 package require sqlite3
 
-# Run this TCL script using "testfixture" in order get a report that shows
-# how much disk space is used by a particular data to actually store data
+# Run this TCL script using an SQLite-enabled TCL interpreter to get a report
+# on how much disk space is used by a particular data to actually store data
 # versus how much space is unused.
+#
+# The dbstat virtual table is required.
 #
 
 if {[catch {
@@ -19,13 +21,40 @@ proc is_without_rowid {tname} {
   db eval "PRAGMA index_list = '$t'" o {
     if {$o(origin) == "pk"} {
       set n $o(name)
-      if {0==[db one { SELECT count(*) FROM sqlite_master WHERE name=$n }]} {
+      if {0==[db one { SELECT count(*) FROM sqlite_schema WHERE name=$n }]} {
         return 1
       }
     }
   }
   return 0
 }
+
+# Read and run TCL commands from standard input.  Used to implement
+# the --tclsh option.
+#
+proc tclsh {} {
+  set line {}
+  while {![eof stdin]} {
+    if {$line!=""} {
+      puts -nonewline "> "
+    } else {
+      puts -nonewline "% "
+    }
+    flush stdout
+    append line [gets stdin]
+    if {[info complete $line]} {
+      if {[catch {uplevel #0 $line} result]} {
+        puts stderr "Error: $result"
+      } elseif {$result!=""} {
+        puts $result
+      }
+      set line {}
+    } else {
+      append line \n
+    }
+  }
+}
+
 
 # Get the name of the database to analyze
 #
@@ -39,22 +68,37 @@ information for the database and its constituent tables and indexes.
 
 Options:
 
-   --stats        Output SQL text that creates a new database containing
-                  statistics about the database that was analyzed
+   --pageinfo   Show how each page of the database-file is used
 
-   --pageinfo     Show how each page of the database-file is used
+   --stats      Output SQL text that creates a new database containing
+                statistics about the database that was analyzed
+
+   --tclsh      Run the built-in TCL interpreter interactively (for debugging)
+
+   --version    Show the version number of SQLite
 }
   exit 1
 }
 set file_to_analyze {}
 set flags(-pageinfo) 0
 set flags(-stats) 0
+set flags(-debug) 0
 append argv {}
 foreach arg $argv {
   if {[regexp {^-+pageinfo$} $arg]} {
     set flags(-pageinfo) 1
   } elseif {[regexp {^-+stats$} $arg]} {
     set flags(-stats) 1
+  } elseif {[regexp {^-+debug$} $arg]} {
+    set flags(-debug) 1
+  } elseif {[regexp {^-+tclsh$} $arg]} {
+    tclsh
+    exit 0
+  } elseif {[regexp {^-+version$} $arg]} {
+    sqlite3 mem :memory:
+    puts [mem one {SELECT sqlite_version()||' '||sqlite_source_id()}]
+    mem close
+    exit 0
   } elseif {[regexp {^-} $arg]} {
     puts stderr "Unknown option: $arg"
     usage
@@ -105,8 +149,23 @@ if {[catch {sqlite3 db $file_to_analyze -uri 1} msg]} {
   puts stderr "error trying to open $file_to_analyze: $msg"
   exit 1
 }
+if {$flags(-debug)} {
+  proc dbtrace {txt} {puts $txt; flush stdout;}
+  db trace ::dbtrace
+}
 
-db eval {SELECT count(*) FROM sqlite_master}
+# Make sure all required compile-time options are available
+#
+if {![db exists {SELECT 1 FROM pragma_compile_options
+                WHERE compile_options='ENABLE_DBSTAT_VTAB'}]} {
+  puts "The SQLite database engine linked with this application\
+        lacks required capabilities. Recompile using the\
+        -DSQLITE_ENABLE_DBSTAT_VTAB compile-time option to fix\
+        this problem."
+  exit 1
+}
+
+db eval {SELECT count(*) FROM sqlite_schema}
 set pageSize [expr {wide([db one {PRAGMA page_size}])}]
 
 if {$flags(-pageinfo)} {
@@ -147,12 +206,17 @@ if {$flags(-stats)} {
   exit 0
 }
 
+
 # In-memory database for collecting statistics. This script loops through
 # the tables and indices in the database being analyzed, adding a row for each
 # to an in-memory database (for which the schema is shown below). It then
 # queries the in-memory db to produce the space-analysis report.
 #
 sqlite3 mem :memory:
+if {$flags(-debug)} {
+  proc dbtrace {txt} {puts $txt; flush stdout;}
+  mem trace ::dbtrace
+}
 set tabledef {CREATE TABLE space_used(
    name clob,        -- Name of a table or index in the database file
    tblname clob,     -- Name of associated table
@@ -186,8 +250,8 @@ db eval {DROP TABLE temp.stat}
 set isCompressed 0
 set compressOverhead 0
 set depth 0
-set sql { SELECT name, tbl_name FROM sqlite_master WHERE rootpage>0 }
-foreach {name tblname} [concat sqlite_master sqlite_master [db eval $sql]] {
+set sql { SELECT name, tbl_name FROM sqlite_schema WHERE rootpage>0 }
+foreach {name tblname} [concat sqlite_schema sqlite_schema [db eval $sql]] {
 
   set is_index [expr {$name!=$tblname}]
   set is_without_rowid [is_without_rowid $name]
@@ -286,7 +350,7 @@ proc titleline {title} {
     puts [string repeat * 79]
   } else {
     set len [string length $title]
-    set stars [string repeat * [expr 79-$len-5]]
+    set stars [string repeat * [expr {79-$len-5}]]
     puts "*** $title $stars"
   }
 }
@@ -296,7 +360,7 @@ proc titleline {title} {
 #
 proc statline {title value {extra {}}} {
   set len [string length $title]
-  set dots [string repeat . [expr 50-$len]]
+  set dots [string repeat . [expr {50-$len}]]
   set len [string length $value]
   set sp2 [string range {          } $len end]
   if {$extra ne ""} {
@@ -322,7 +386,7 @@ proc percent {num denom {of {}}} {
 
 proc divide {num denom} {
   if {$denom==0} {return 0.0}
-  return [format %.2f [expr double($num)/double($denom)]]
+  return [format %.2f [expr {double($num)/double($denom)}]]
 }
 
 # Generate a subreport that covers some subset of the database.
@@ -378,6 +442,7 @@ proc subreport {title where showFrag} {
   # avg_payload: Average payload per btree entry.
   # avg_fanout: Average fanout for internal pages.
   # avg_unused: Average unused bytes per btree entry.
+  # avg_meta: Average metadata overhead per entry.
   # ovfl_cnt_percent: Percentage of btree entries that use overflow pages.
   #
   set total_pages [expr {$leaf_pages+$int_pages+$ovfl_pages}]
@@ -387,6 +452,10 @@ proc subreport {title where showFrag} {
   set total_unused [expr {$ovfl_unused+$int_unused+$leaf_unused}]
   set avg_payload [divide $payload $nentry]
   set avg_unused [divide $total_unused $nentry]
+  set total_meta [expr {$storage - $payload - $total_unused}]
+  set total_meta [expr {$total_meta + 4*($ovfl_pages - $ovfl_cnt)}]
+  set meta_percent [percent $total_meta $storage {of metadata}]
+  set avg_meta [divide $total_meta $nentry]
   if {$int_pages>0} {
     # TODO: Is this formula correct?
     set nTab [mem eval "
@@ -414,9 +483,11 @@ proc subreport {title where showFrag} {
     statline {Bytes used after compression} $compressed_size $pct
   }
   statline {Bytes of payload} $payload $payload_percent
+  statline {Bytes of metadata} $total_meta $meta_percent
   if {$cnt==1} {statline {B-tree depth} $depth}
   statline {Average payload per entry} $avg_payload
   statline {Average unused bytes per entry} $avg_unused
+  statline {Average metadata per entry} $avg_meta
   if {[info exists avg_fanout]} {
     statline {Average fanout} $avg_fanout
   }
@@ -467,10 +538,10 @@ proc autovacuum_overhead {filePages pageSize} {
   # database file is one pointer-map page, followed by $ptrsPerPage other
   # pages, followed by a pointer-map page etc. The first pointer-map page
   # is the second page of the file overall.
-  set ptrsPerPage [expr double($pageSize/5)]
+  set ptrsPerPage [expr {double($pageSize/5)}]
 
   # Return the number of pointer map pages in the database.
-  return [expr wide(ceil( ($filePages-1.0)/($ptrsPerPage+1.0) ))]
+  return [expr {wide(ceil(($filePages-1.0)/($ptrsPerPage+1.0)))}]
 }
 
 
@@ -494,7 +565,7 @@ proc autovacuum_overhead {filePages pageSize} {
 # nautoindex:    Number of indices created automatically.
 # nmanindex:     Number of indices created manually.
 # user_payload:  Number of bytes of payload in table btrees 
-#                (not including sqlite_master)
+#                (not including sqlite_schema)
 # user_percent:  $user_payload as a percentage of total file size.
 
 ### The following, setting $file_bytes based on the actual size of the file
@@ -511,7 +582,7 @@ set av_pgcnt    [autovacuum_overhead $file_pgcnt $pageSize]
 set av_percent  [percent $av_pgcnt $file_pgcnt]
 
 set sql {SELECT sum(leaf_pages+int_pages+ovfl_pages) FROM space_used}
-set inuse_pgcnt   [expr wide([mem eval $sql])]
+set inuse_pgcnt   [expr {wide([mem eval $sql])}]
 set inuse_percent [percent $inuse_pgcnt $file_pgcnt]
 
 set free_pgcnt    [expr {$file_pgcnt-$inuse_pgcnt-$av_pgcnt}]
@@ -521,15 +592,18 @@ set free_percent2 [percent $free_pgcnt2 $file_pgcnt]
 
 set file_pgcnt2 [expr {$inuse_pgcnt+$free_pgcnt2+$av_pgcnt}]
 
-set ntable [db eval {SELECT count(*)+1 FROM sqlite_master WHERE type='table'}]
-set nindex [db eval {SELECT count(*) FROM sqlite_master WHERE type='index'}]
-set sql {SELECT count(*) FROM sqlite_master WHERE name LIKE 'sqlite_autoindex%'}
+# Account for the lockbyte page
+if {$file_pgcnt2*$pageSize>1073742335} {incr file_pgcnt2}
+
+set ntable [db eval {SELECT count(*)+1 FROM sqlite_schema WHERE type='table'}]
+set nindex [db eval {SELECT count(*) FROM sqlite_schema WHERE type='index'}]
+set sql {SELECT count(*) FROM sqlite_schema WHERE name LIKE 'sqlite_autoindex%'}
 set nautoindex [db eval $sql]
 set nmanindex [expr {$nindex-$nautoindex}]
 
 # set total_payload [mem eval "SELECT sum(payload) FROM space_used"]
 set user_payload [mem one {SELECT int(sum(payload)) FROM space_used
-     WHERE NOT is_index AND name NOT LIKE 'sqlite_master'}]
+     WHERE NOT is_index AND name NOT LIKE 'sqlite_schema'}]
 set user_percent [percent $user_payload $file_bytes]
 
 # Output the summary statistics calculated above.
@@ -662,7 +736,7 @@ Pages of auto-vacuum overhead
 
 Number of tables in the database
 
-    The number of tables in the database, including the SQLITE_MASTER table
+    The number of tables in the database, including the SQLITE_SCHEMA table
     used to store schema information.
 
 Number of indices
@@ -685,7 +759,7 @@ Size of the file in bytes
 Bytes of user payload stored
 
     The total number of bytes of user payload stored in the database. The
-    schema information in the SQLITE_MASTER table is not counted when
+    schema information in the SQLITE_SCHEMA table is not counted when
     computing this number.  The percentage at the right shows the payload
     divided by the total file size.
 
@@ -710,6 +784,16 @@ Bytes of payload
     part of table entries and the key part of index entries.  The percentage
     at the right is the bytes of payload divided by the bytes of storage 
     consumed.
+
+Bytes of metadata
+
+    The amount of formatting and structural information stored in the
+    table or index.  Metadata includes the btree page header, the cell pointer
+    array, the size field for each cell, the left child pointer or non-leaf
+    cells, the overflow pointers for overflow cells, and the rowid value for
+    rowid table cells.  In other words, metadata is everything that is neither
+    unused space nor content.  The record header in the payload is counted as
+    content, not metadata.
 
 Average payload per entry
 

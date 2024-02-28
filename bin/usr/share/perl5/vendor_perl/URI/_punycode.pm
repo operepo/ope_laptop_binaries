@@ -3,7 +3,7 @@ package URI::_punycode;
 use strict;
 use warnings;
 
-our $VERSION = "1.68";
+our $VERSION = '5.21';
 
 use Exporter 'import';
 our @EXPORT = qw(encode_punycode decode_punycode);
@@ -25,7 +25,7 @@ my $BasicRE   = qr/[\x00-\x7f]/;
 
 sub _croak { require Carp; Carp::croak(@_); }
 
-sub digit_value {
+sub _digit_value {
     my $code = shift;
     return ord($code) - ord("A") if $code =~ /[A-Z]/;
     return ord($code) - ord("a") if $code =~ /[a-z]/;
@@ -33,14 +33,14 @@ sub digit_value {
     return;
 }
 
-sub code_point {
+sub _code_point {
     my $digit = shift;
     return $digit + ord('a') if 0 <= $digit && $digit <= 25;
     return $digit + ord('0') - 26 if 26 <= $digit && $digit <= 36;
     die 'NOT COME HERE';
 }
 
-sub adapt {
+sub _adapt {
     my($delta, $numpoints, $firsttime) = @_;
     $delta = $firsttime ? $delta / DAMP : $delta / 2;
     $delta += $delta / $numpoints;
@@ -71,7 +71,7 @@ sub decode_punycode {
     LOOP:
 	for (my $k = BASE; 1; $k += BASE) {
 	    my $cp = substr($code, 0, 1, '');
-	    my $digit = digit_value($cp);
+	    my $digit = _digit_value($cp);
 	    defined $digit or return _croak("invalid punycode input");
 	    $i += $digit * $w;
 	    my $t = ($k <= $bias) ? TMIN
@@ -79,7 +79,7 @@ sub decode_punycode {
 	    last LOOP if $digit < $t;
 	    $w *= (BASE - $t);
 	}
-	$bias = adapt($i - $oldi, @output + 1, $oldi == 0);
+	$bias = _adapt($i - $oldi, @output + 1, $oldi == 0);
 	warn "bias becomes $bias" if $DEBUG;
 	$n += $i / (@output + 1);
 	$i = $i % (@output + 1);
@@ -106,7 +106,7 @@ sub encode_punycode {
     warn "basic codepoints: (@output)" if $DEBUG;
 
     while ($h < @input) {
-	my $m = min(grep { $_ >= $n } map ord, @input);
+	my $m = _min(grep { $_ >= $n } map ord, @input);
 	warn sprintf "next code point to insert is %04x", $m if $DEBUG;
 	$delta += ($m - $n) * ($h + 1);
 	$n = $m;
@@ -120,12 +120,12 @@ sub encode_punycode {
 		    my $t = ($k <= $bias) ? TMIN :
 			($k >= $bias + TMAX) ? TMAX : $k - $bias;
 		    last LOOP if $q < $t;
-		    my $cp = code_point($t + (($q - $t) % (BASE - $t)));
+		    my $cp = _code_point($t + (($q - $t) % (BASE - $t)));
 		    push @output, chr($cp);
 		    $q = ($q - $t) / (BASE - $t);
 		}
-		push @output, chr(code_point($q));
-		$bias = adapt($delta, $h + 1, $h == $b);
+		push @output, chr(_code_point($q));
+		$bias = _adapt($delta, $h + 1, $h == $b);
 		warn "bias becomes $bias" if $DEBUG;
 		$delta = 0;
 		$h++;
@@ -137,7 +137,7 @@ sub encode_punycode {
     return join '', @output;
 }
 
-sub min {
+sub _min {
     my $min = shift;
     for (@_) { $min = $_ if $_ <= $min }
     return $min;
@@ -146,58 +146,72 @@ sub min {
 1;
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 URI::_punycode - encodes Unicode string in Punycode
 
 =head1 SYNOPSIS
 
-  use URI::_punycode;
-  $punycode = encode_punycode($unicode);
-  $unicode  = decode_punycode($punycode);
+  use strict;
+  use warnings;
+  use utf8;
+
+  use URI::_punycode qw(encode_punycode decode_punycode);
+
+  # encode a unicode string
+  my $punycode = encode_punycode('http://☃.net'); # http://.net-xc8g
+  $punycode = encode_punycode('bücher'); # bcher-kva
+  $punycode = encode_punycode('他们为什么不说中文'); # ihqwcrb4cv8a8dqg056pqjye
+
+  # decode a punycode string back into a unicode string
+  my $unicode = decode_punycode('http://.net-xc8g'); # http://☃.net
+  $unicode = decode_punycode('bcher-kva'); # bücher
+  $unicode = decode_punycode('ihqwcrb4cv8a8dqg056pqjye'); # 他们为什么不说中文
 
 =head1 DESCRIPTION
 
-URI::_punycode is a module to encode / decode Unicode strings into
-Punycode, an efficient encoding of Unicode for use with IDNA.
-
-This module requires Perl 5.6.0 or over to handle UTF8 flagged Unicode
-strings.
+L<URI::_punycode> is a module to encode / decode Unicode strings into
+L<Punycode|https://tools.ietf.org/html/rfc3492>, an efficient
+encoding of Unicode for use with L<IDNA|https://tools.ietf.org/html/rfc5890>.
 
 =head1 FUNCTIONS
 
-This module exports following functions by default.
+All functions throw exceptions on failure. You can C<catch> them with
+L<Syntax::Keyword::Try> or L<Try::Tiny>. The following functions are exported
+by default.
 
-=over 4
+=head2 encode_punycode
 
-=item encode_punycode
+  my $punycode = encode_punycode('http://☃.net');  # http://.net-xc8g
+  $punycode = encode_punycode('bücher'); # bcher-kva
+  $punycode = encode_punycode('他们为什么不说中文') # ihqwcrb4cv8a8dqg056pqjye
 
-  $punycode = encode_punycode($unicode);
-
-takes Unicode string (UTF8-flagged variable) and returns Punycode
+Takes a Unicode string (UTF8-flagged variable) and returns a Punycode
 encoding for it.
 
-=item decode_punycode
+=head2 decode_punycode
 
-  $unicode = decode_punycode($punycode)
+  my $unicode = decode_punycode('http://.net-xc8g'); # http://☃.net
+  $unicode = decode_punycode('bcher-kva'); # bücher
+  $unicode = decode_punycode('ihqwcrb4cv8a8dqg056pqjye'); # 他们为什么不说中文
 
-takes Punycode encoding and returns original Unicode string.
-
-=back
-
-These functions throw exceptions on failure. You can catch 'em via
-C<eval>.
+Takes a Punycode encoding and returns original Unicode string.
 
 =head1 AUTHOR
 
-Tatsuhiko Miyagawa E<lt>miyagawa@bulknews.netE<gt> is the author of
-IDNA::Punycode v0.02 which was the basis for this module.
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+Tatsuhiko Miyagawa <F<miyagawa@bulknews.net>> is the author of
+L<IDNA::Punycode> which was the basis for this module.
 
 =head1 SEE ALSO
 
-L<IDNA::Punycode>, RFC 3492
+L<IDNA::Punycode>, L<RFC 3492|https://tools.ietf.org/html/rfc3492>,
+L<RFC 5891|https://tools.ietf.org/html/rfc5891>
+
+=head1 COPYRIGHT AND LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =cut

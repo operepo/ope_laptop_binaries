@@ -4,7 +4,7 @@
 package Config;
 use strict;
 use warnings;
-use vars '%Config';
+our %Config;
 
 sub bincompat_options {
     return split ' ', (Internals::V())[0];
@@ -29,20 +29,17 @@ sub _V {
 
     my ($bincompat, $non_bincompat, $date, @patches) = Internals::V();
 
-    my $opts = join ' ', sort split ' ', "$bincompat $non_bincompat";
-
-    # wrap at 76 columns.
-
-    $opts =~ s/(?=.{53})(.{1,53}) /$1\n                        /mg;
+    my @opts = sort split ' ', "$bincompat $non_bincompat";
 
     print Config::myconfig();
     print "\nCharacteristics of this binary (from libperl): \n";
 
-    print "  Compile-time options: $opts\n";
+    print "  Compile-time options:\n";
+    print "    $_\n" for @opts;
 
     if (@patches) {
         print "  Locally applied patches:\n";
-        print "\t$_\n" foreach @patches;
+        print "    $_\n" foreach @patches;
     }
 
     print "  Built under msys\n";
@@ -79,9 +76,9 @@ sub header_files {
 #
 ## Package name      : perl5
 ## Source directory  : .
-## Configuration time: Wed May 31 08:17:19 MSK 2017
-## Configured by     : Alexx
-## Target system     : msys_nt-6.1 warlock 2.7.0(0.30653) 2017-02-14 08:57 x86_64 msys 
+## Configuration time: Fri Dec  1 16:19:30 UTC 2023
+## Configured by     : runneradmin
+## Target system     : msys_nt-10.0-20348 fv-az534-830 3.4.10-b7ef037e.x86_64 2023-11-29 23:04 utc x86_64 msys 
 #
 #: Configure command line arguments.
 #
@@ -91,32 +88,66 @@ our $summary = <<'!END!';
 Summary of my $package (revision $revision $version_patchlevel_string) configuration:
   $git_commit_id_title $git_commit_id$git_ancestor_line
   Platform:
-    osname=$osname, osvers=$osvers, archname=$archname
+    osname=$osname
+    osvers=$osvers
+    archname=$archname
     uname='$myuname'
     config_args='$config_args'
-    hint=$hint, useposix=$useposix, d_sigaction=$d_sigaction
-    useithreads=$useithreads, usemultiplicity=$usemultiplicity
-    use64bitint=$use64bitint, use64bitall=$use64bitall, uselongdouble=$uselongdouble
-    usemymalloc=$usemymalloc, bincompat5005=undef
+    hint=$hint
+    useposix=$useposix
+    d_sigaction=$d_sigaction
+    useithreads=$useithreads
+    usemultiplicity=$usemultiplicity
+    use64bitint=$use64bitint
+    use64bitall=$use64bitall
+    uselongdouble=$uselongdouble
+    usemymalloc=$usemymalloc
+    default_inc_excludes_dot=$default_inc_excludes_dot
   Compiler:
-    cc='$cc', ccflags ='$ccflags',
-    optimize='$optimize',
+    cc='$cc'
+    ccflags ='$ccflags'
+    optimize='$optimize'
     cppflags='$cppflags'
-    ccversion='$ccversion', gccversion='$gccversion', gccosandvers='$gccosandvers'
-    intsize=$intsize, longsize=$longsize, ptrsize=$ptrsize, doublesize=$doublesize, byteorder=$byteorder, doublekind=$doublekind
-    d_longlong=$d_longlong, longlongsize=$longlongsize, d_longdbl=$d_longdbl, longdblsize=$longdblsize, longdblkind=$longdblkind
-    ivtype='$ivtype', ivsize=$ivsize, nvtype='$nvtype', nvsize=$nvsize, Off_t='$lseektype', lseeksize=$lseeksize
-    alignbytes=$alignbytes, prototype=$prototype
+    ccversion='$ccversion'
+    gccversion='$gccversion'
+    gccosandvers='$gccosandvers'
+    intsize=$intsize
+    longsize=$longsize
+    ptrsize=$ptrsize
+    doublesize=$doublesize
+    byteorder=$byteorder
+    doublekind=$doublekind
+    d_longlong=$d_longlong
+    longlongsize=$longlongsize
+    d_longdbl=$d_longdbl
+    longdblsize=$longdblsize
+    longdblkind=$longdblkind
+    ivtype='$ivtype'
+    ivsize=$ivsize
+    nvtype='$nvtype'
+    nvsize=$nvsize
+    Off_t='$lseektype'
+    lseeksize=$lseeksize
+    alignbytes=$alignbytes
+    prototype=$prototype
   Linker and Libraries:
-    ld='$ld', ldflags ='$ldflags'
+    ld='$ld'
+    ldflags ='$ldflags'
     libpth=$libpth
     libs=$libs
     perllibs=$perllibs
-    libc=$libc, so=$so, useshrplib=$useshrplib, libperl=$libperl
+    libc=$libc
+    so=$so
+    useshrplib=$useshrplib
+    libperl=$libperl
     gnulibc_version='$gnulibc_version'
   Dynamic Linking:
-    dlsrc=$dlsrc, dlext=$dlext, d_dlsymun=$d_dlsymun, ccdlflags='$ccdlflags'
-    cccdlflags='$cccdlflags', lddlflags='$lddlflags'
+    dlsrc=$dlsrc
+    dlext=$dlext
+    d_dlsymun=$d_dlsymun
+    ccdlflags='$ccdlflags'
+    cccdlflags='$cccdlflags'
+    lddlflags='$lddlflags'
 
 !END!
 my $summary_expanded;
@@ -124,19 +155,19 @@ my $summary_expanded;
 sub myconfig {
     return $summary_expanded if $summary_expanded;
     ($summary_expanded = $summary) =~ s{\$(\w+)}
-		 {
-			my $c;
-			if ($1 eq 'git_ancestor_line') {
-				if ($Config::Config{git_ancestor}) {
-					$c= "\n  Ancestor: $Config::Config{git_ancestor}";
-				} else {
-					$c= "";
-				}
-			} else {
-                     		$c = $Config::Config{$1};
-			}
-			defined($c) ? $c : 'undef'
-		}ge;
+                 {
+                        my $c;
+                        if ($1 eq 'git_ancestor_line') {
+                                if ($Config::Config{git_ancestor}) {
+                                        $c= "\n  Ancestor: $Config::Config{git_ancestor}";
+                                } else {
+                                        $c= "";
+                                }
+                        } else {
+                                $c = $Config::Config{$1};
+                        }
+                        defined($c) ? $c : 'undef'
+                }ge;
     $summary_expanded;
 }
 
@@ -149,19 +180,19 @@ Header=''
 Id=''
 Locker=''
 Log=''
-PATCHLEVEL='24'
+PATCHLEVEL='38'
 PATH='.:/usr/bin/'
 PERL_API_REVISION='5'
 PERL_API_SUBVERSION='0'
-PERL_API_VERSION='24'
+PERL_API_VERSION='38'
 PERL_CONFIG_SH='true'
 PERL_PATCHLEVEL=''
 PERL_REVISION='5'
-PERL_SUBVERSION='1'
-PERL_VERSION='24'
+PERL_SUBVERSION='2'
+PERL_VERSION='38'
 RCSfile=''
 Revision=''
-SUBVERSION='1'
+SUBVERSION='2'
 Source=''
 State=''
 _a='.a'
@@ -170,17 +201,16 @@ _o='.o'
 afs='false'
 afsroot='/afs'
 alignbytes='8'
-ansi2knr=''
 aphostname='/usr/bin/hostname'
 api_revision='5'
 api_subversion='0'
-api_version='24'
-api_versionstring='5.24.0'
+api_version='38'
+api_versionstring='5.38.0'
 ar='ar'
 archlib='/usr/lib/perl5/core_perl'
 archlibexp='/usr/lib/perl5/core_perl'
-archname64=''
 archname='x86_64-msys-thread-multi'
+archname64=''
 archobjs='cygwin.o'
 asctime_r_proto='REENTRANT_PROTO_B_SB'
 awk='awk'
@@ -198,14 +228,14 @@ cat='cat'
 cc='gcc'
 cccdlflags=' '
 ccdlflags=' '
-ccflags='-DPERL_USE_SAFE_PUTENV -D_GNU_SOURCE -U__STRICT_ANSI__ -march=x86-64 -mtune=generic -O2 -pipe -fwrapv -fno-strict-aliasing -fstack-protector-strong'
+ccflags='-DPERL_USE_SAFE_PUTENV -U__STRICT_ANSI__ -D_GNU_SOURCE -march=nocona -msahf -mtune=generic -O2 -pipe -fwrapv -fno-strict-aliasing -fstack-protector-strong -D_FORTIFY_SOURCE=2'
 ccflags_uselargefiles=''
 ccname='gcc'
 ccsymbols=''
 ccversion=''
-cf_by='Alexx'
+cf_by='runneradmin'
 cf_email=''
-cf_time='Wed May 31 08:17:19 MSK 2017'
+cf_time='Fri Dec  1 16:19:30 UTC 2023'
 charbits='8'
 charsize='1'
 chgrp=''
@@ -213,8 +243,10 @@ chmod='chmod'
 chown=''
 clocktype='clock_t'
 comm='comm'
+compiler_warning='grep -i warning'
 compress=''
 config_arg0='./Configure'
+config_arg1='-des'
 config_arg10='-Dvendorlib=/usr/share/perl5/vendor_perl'
 config_arg11='-Dvendorarch=/usr/lib/perl5/vendor_perl'
 config_arg12='-Dscriptdir=/usr/bin/core_perl'
@@ -225,13 +257,12 @@ config_arg16='-Dman1ext=1perl'
 config_arg17='-Dman3ext=3perl'
 config_arg18='-Darchname=-msys-threads'
 config_arg19='-Dmyarchname=-msys'
-config_arg1='-des'
-config_arg20='-Dlibperl=msys-perl5_24.dll'
+config_arg2='-Dusethreads'
+config_arg20='-Dlibperl=msys-perl5_38.dll'
 config_arg21='-Dcc=gcc'
 config_arg22='-Dld=g++'
-config_arg23='-Accflags=-march=x86-64 -mtune=generic -O2 -pipe -fwrapv'
-config_arg2='-Dusethreads'
-config_arg3='-Doptimize=-march=x86-64 -mtune=generic -O2 -pipe'
+config_arg23='-Accflags=-march=nocona -msahf -mtune=generic -O2 -pipe -fwrapv'
+config_arg3='-Doptimize=-march=nocona -msahf -mtune=generic -O2 -pipe'
 config_arg4='-Dprefix=/usr'
 config_arg5='-Dvendorprefix=/usr'
 config_arg6='-Dprivlib=/usr/share/perl5/core_perl'
@@ -239,20 +270,20 @@ config_arg7='-Darchlib=/usr/lib/perl5/core_perl'
 config_arg8='-Dsitelib=/usr/share/perl5/site_perl'
 config_arg9='-Dsitearch=/usr/lib/perl5/site_perl'
 config_argc='23'
-config_args='-des -Dusethreads -Doptimize=-march=x86-64 -mtune=generic -O2 -pipe -Dprefix=/usr -Dvendorprefix=/usr -Dprivlib=/usr/share/perl5/core_perl -Darchlib=/usr/lib/perl5/core_perl -Dsitelib=/usr/share/perl5/site_perl -Dsitearch=/usr/lib/perl5/site_perl -Dvendorlib=/usr/share/perl5/vendor_perl -Dvendorarch=/usr/lib/perl5/vendor_perl -Dscriptdir=/usr/bin/core_perl -Dsitescript=/usr/bin/site_perl -Dvendorscript=/usr/bin/vendor_perl -Dinc_version_list=none -Dman1ext=1perl -Dman3ext=3perl -Darchname=-msys-threads -Dmyarchname=-msys -Dlibperl=msys-perl5_24.dll -Dcc=gcc -Dld=g++ -Accflags=-march=x86-64 -mtune=generic -O2 -pipe -fwrapv'
+config_args='-des -Dusethreads -Doptimize=-march=nocona -msahf -mtune=generic -O2 -pipe -Dprefix=/usr -Dvendorprefix=/usr -Dprivlib=/usr/share/perl5/core_perl -Darchlib=/usr/lib/perl5/core_perl -Dsitelib=/usr/share/perl5/site_perl -Dsitearch=/usr/lib/perl5/site_perl -Dvendorlib=/usr/share/perl5/vendor_perl -Dvendorarch=/usr/lib/perl5/vendor_perl -Dscriptdir=/usr/bin/core_perl -Dsitescript=/usr/bin/site_perl -Dvendorscript=/usr/bin/vendor_perl -Dinc_version_list=none -Dman1ext=1perl -Dman3ext=3perl -Darchname=-msys-threads -Dmyarchname=-msys -Dlibperl=msys-perl5_38.dll -Dcc=gcc -Dld=g++ -Accflags=-march=nocona -msahf -mtune=generic -O2 -pipe -fwrapv'
 contains='grep'
 cp='cp'
 cpio=''
 cpp='cpp'
 cpp_stuff='42'
-cppccsymbols='unix=1'
-cppflags='-DPERL_USE_SAFE_PUTENV -D_GNU_SOURCE -U__STRICT_ANSI__ -march=x86-64 -mtune=generic -O2 -pipe -fwrapv -fno-strict-aliasing -fstack-protector-strong'
+cppccsymbols=''
+cppflags='-DPERL_USE_SAFE_PUTENV -U__STRICT_ANSI__ -D_GNU_SOURCE -march=nocona -msahf -mtune=generic -O2 -pipe -fwrapv -fno-strict-aliasing -fstack-protector-strong'
 cpplast='-'
 cppminus='-'
 cpprun='gcc  -E'
 cppstdin='gcc  -E'
-cppsymbols='BIG_ENDIAN=4321 BYTE_ORDER=1234 LITTLE_ENDIAN=1234 _BIG_ENDIAN=4321 _BYTE_ORDER=1234 _GNU_SOURCE=1 _LITTLE_ENDIAN=1234 _LONG_DOUBLE=long\ double _LP64=1 _POSIX_C_SOURCE=200809L _POSIX_SOURCE=1 _XOPEN_SOURCE=700 _XOPEN_SOURCE_EXTENDED=1 __BIG_ENDIAN=4321 __BYTE_ORDER=1234 __BYTE_ORDER__=1234 __CYGWIN__=1 __GNUC_MINOR__=3 __GNUC__=6 __LITTLE_ENDIAN=1234 __LP64__=1 __MSYS__=1 __PIC__=1 __STDC__=1 __amd64=1 __amd64__=1 __pic__=1 __unix=1 __unix__=1 __x86_64=1 __x86_64__=1'
-crypt_r_proto='0'
+cppsymbols='_GNU_SOURCE=1 _LONG_DOUBLE=long\ double _LP64=1 _POSIX_C_SOURCE=200809L _POSIX_SOURCE=1 _XOPEN_SOURCE=700 _XOPEN_SOURCE_EXTENDED=1 __BYTE_ORDER__=1234 __CYGWIN__=1 __GNUC_MINOR__=2 __GNUC__=13 __LP64__=1 __MSYS__=1 __PIC__=1 __STDC__=1 __amd64=1 __amd64__=1 __pic__=1 __unix=1 __unix__=1 __x86_64=1 __x86_64__=1 unix=1'
+crypt_r_proto='REENTRANT_PROTO_B_CCS'
 cryptlib=''
 csh='csh'
 ctermid_r_proto='0'
@@ -272,6 +303,7 @@ d_PRIu64='define'
 d_PRIx64='define'
 d_SCNfldbl='define'
 d__fwalk='undef'
+d_accept4='define'
 d_access='define'
 d_accessx='undef'
 d_acosh='define'
@@ -284,6 +316,7 @@ d_asinh='define'
 d_atanh='define'
 d_atolf='undef'
 d_atoll='define'
+d_attribute_always_inline='define'
 d_attribute_deprecated='define'
 d_attribute_format='define'
 d_attribute_malloc='define'
@@ -291,55 +324,62 @@ d_attribute_nonnull='define'
 d_attribute_noreturn='define'
 d_attribute_pure='define'
 d_attribute_unused='define'
+d_attribute_visibility='define'
 d_attribute_warn_unused_result='define'
 d_backtrace='undef'
-d_bcmp='define'
-d_bcopy='define'
 d_bsd='define'
 d_bsdgetpgrp='undef'
 d_bsdsetpgrp='undef'
+d_builtin_add_overflow='define'
 d_builtin_choose_expr='define'
 d_builtin_expect='define'
-d_bzero='define'
+d_builtin_mul_overflow='define'
+d_builtin_sub_overflow='define'
 d_c99_variadic_macros='define'
 d_casti32='undef'
 d_castneg='define'
 d_cbrt='define'
-d_charvspr='undef'
 d_chown='define'
 d_chroot='define'
 d_chsize='undef'
 d_class='undef'
-d_clearenv='undef'
+d_clearenv='define'
 d_closedir='define'
 d_cmsghdr_s='define'
-d_const='define'
 d_copysign='define'
 d_copysignl='define'
 d_cplusplus='undef'
 d_crypt='define'
-d_crypt_r='undef'
+d_crypt_r='define'
 d_csh='undef'
 d_ctermid='define'
 d_ctermid_r='undef'
 d_ctime64='undef'
 d_ctime_r='define'
 d_cuserid='define'
-d_dbl_dig='define'
-d_dbminitproto='define'
-d_difftime64='undef'
+d_dbminitproto='undef'
 d_difftime='define'
+d_difftime64='undef'
 d_dir_dd_fd='undef'
 d_dirfd='define'
 d_dirnamlen='undef'
-d_dladdr='undef'
+d_dladdr='define'
 d_dlerror='define'
 d_dlopen='define'
 d_dlsymun='undef'
 d_dosuid='undef'
+d_double_has_inf='define'
+d_double_has_nan='define'
+d_double_has_negative_zero='define'
+d_double_has_subnormals='define'
+d_double_style_cray='undef'
+d_double_style_ibm='undef'
+d_double_style_ieee='define'
+d_double_style_vax='undef'
 d_drand48_r='undef'
 d_drand48proto='define'
 d_dup2='define'
+d_dup3='define'
 d_duplocale='define'
 d_eaccess='define'
 d_endgrent='define'
@@ -363,6 +403,7 @@ d_expm1='define'
 d_faststdio='define'
 d_fchdir='define'
 d_fchmod='define'
+d_fchmodat='define'
 d_fchown='define'
 d_fcntl='define'
 d_fcntl_can_lock='define'
@@ -372,6 +413,8 @@ d_fdclose='undef'
 d_fdim='define'
 d_fds_bits='define'
 d_fegetround='define'
+d_ffs='define'
+d_ffsl='define'
 d_fgetpos='define'
 d_finite='define'
 d_finitel='define'
@@ -402,10 +445,12 @@ d_fsync='define'
 d_ftello='define'
 d_ftime='undef'
 d_futimes='define'
+d_gai_strerror='define'
 d_gdbm_ndbm_h_uses_prototypes='undef'
 d_gdbmndbm_h_uses_prototypes='undef'
 d_getaddrinfo='define'
 d_getcwd='define'
+d_getenv_preserves_other_thread='define'
 d_getespwnam='undef'
 d_getfsstat='undef'
 d_getgrent='define'
@@ -439,8 +484,8 @@ d_getpbyname='define'
 d_getpbynumber='define'
 d_getpent='define'
 d_getpgid='define'
-d_getpgrp2='undef'
 d_getpgrp='define'
+d_getpgrp2='undef'
 d_getppid='define'
 d_getprior='define'
 d_getprotobyname_r='undef'
@@ -466,13 +511,13 @@ d_gmtime64='undef'
 d_gmtime_r='define'
 d_gnulibc='undef'
 d_grpasswd='define'
+d_has_C_UTF8='true'
 d_hasmntopt='undef'
 d_htonl='define'
 d_hypot='define'
 d_ilogb='define'
 d_ilogbl='define'
 d_inc_version_list='undef'
-d_index='undef'
 d_inetaton='define'
 d_inetntop='define'
 d_inetpton='define'
@@ -487,7 +532,7 @@ d_isfinite='define'
 d_isfinitel='undef'
 d_isinf='define'
 d_isinfl='define'
-d_isless='undef'
+d_isless='define'
 d_isnan='define'
 d_isnanl='define'
 d_isnormal='define'
@@ -503,10 +548,12 @@ d_lgamma_r='define'
 d_libm_lib_version='undef'
 d_libname_unique='undef'
 d_link='define'
+d_linkat='define'
 d_llrint='define'
 d_llrintl='define'
 d_llround='define'
 d_llroundl='define'
+d_localeconv_l='undef'
 d_localtime64='undef'
 d_localtime_r='define'
 d_localtime_r_needs_tzset='undef'
@@ -515,6 +562,11 @@ d_lockf='define'
 d_log1p='define'
 d_log2='define'
 d_logb='define'
+d_long_double_style_ieee='define'
+d_long_double_style_ieee_doubledouble='undef'
+d_long_double_style_ieee_extended='define'
+d_long_double_style_ieee_std='undef'
+d_long_double_style_vax='undef'
 d_longdbl='define'
 d_longlong='define'
 d_lrint='define'
@@ -526,22 +578,22 @@ d_lstat='define'
 d_madvise='define'
 d_malloc_good_size='undef'
 d_malloc_size='undef'
+d_malloc_usable_size='define'
 d_mblen='define'
+d_mbrlen='define'
+d_mbrtowc='define'
 d_mbstowcs='define'
 d_mbtowc='define'
-d_memchr='define'
-d_memcmp='define'
-d_memcpy='define'
 d_memmem='define'
-d_memmove='define'
-d_memset='define'
+d_memrchr='define'
 d_mkdir='define'
 d_mkdtemp='define'
 d_mkfifo='define'
+d_mkostemp='define'
 d_mkstemp='define'
 d_mkstemps='define'
-d_mktime64='undef'
 d_mktime='define'
+d_mktime64='undef'
 d_mmap='define'
 d_modfl='define'
 d_modflproto='define'
@@ -561,6 +613,7 @@ d_msync='define'
 d_munmap='define'
 d_mymalloc='undef'
 d_nan='define'
+d_nanosleep='define'
 d_ndbm='define'
 d_ndbm_h_uses_prototypes='define'
 d_nearbyint='define'
@@ -569,6 +622,8 @@ d_nextafter='define'
 d_nexttoward='define'
 d_nice='define'
 d_nl_langinfo='define'
+d_nl_langinfo_l='define'
+d_non_int_bitfields='define'
 d_nv_preserves_uv='undef'
 d_nv_zero_is_allbits_zero='define'
 d_off64_t='undef'
@@ -576,16 +631,18 @@ d_old_pthread_create_joinable='undef'
 d_oldpthreads='undef'
 d_oldsock='undef'
 d_open3='define'
+d_openat='define'
 d_pathconf='define'
 d_pause='define'
 d_perl_otherlibdirs='undef'
 d_phostname='undef'
 d_pipe='define'
+d_pipe2='define'
 d_poll='define'
 d_portable='define'
 d_prctl='undef'
 d_prctl_set_name='undef'
-d_printf_format_null='undef'
+d_printf_format_null='define'
 d_procselfexe='undef'
 d_pseudofork='undef'
 d_pthread_atfork='define'
@@ -602,10 +659,11 @@ d_pwpasswd='define'
 d_pwquota='undef'
 d_qgcvt='undef'
 d_quad='define'
+d_querylocale='undef'
 d_random_r='undef'
 d_re_comp='undef'
-d_readdir64_r='undef'
 d_readdir='define'
+d_readdir64_r='undef'
 d_readdir_r='define'
 d_readlink='undef'
 d_readv='define'
@@ -615,13 +673,11 @@ d_regcomp='define'
 d_remainder='define'
 d_remquo='define'
 d_rename='define'
+d_renameat='define'
 d_rewinddir='define'
 d_rint='define'
 d_rmdir='define'
 d_round='define'
-d_safebcpy='undef'
-d_safemcpy='undef'
-d_sanemcmp='define'
 d_sbrkproto='define'
 d_scalbn='define'
 d_scalbnl='define'
@@ -637,6 +693,7 @@ d_semget='define'
 d_semop='define'
 d_sendmsg='define'
 d_setegid='define'
+d_setenv='define'
 d_seteuid='define'
 d_setgrent='define'
 d_setgrent_r='undef'
@@ -646,13 +703,14 @@ d_sethostent_r='undef'
 d_setitimer='define'
 d_setlinebuf='define'
 d_setlocale='define'
+d_setlocale_accepts_any_locale_name='undef'
 d_setlocale_r='undef'
 d_setnent='undef'
 d_setnetent_r='undef'
 d_setpent='define'
 d_setpgid='define'
-d_setpgrp2='undef'
 d_setpgrp='define'
+d_setpgrp2='undef'
 d_setprior='define'
 d_setproctitle='undef'
 d_setprotoent_r='undef'
@@ -691,13 +749,13 @@ d_sitearch='define'
 d_snprintf='define'
 d_sockaddr_in6='define'
 d_sockaddr_sa_len='undef'
+d_sockaddr_storage='define'
 d_sockatmark='define'
 d_sockatmarkproto='define'
 d_socket='define'
 d_socklen_t='define'
 d_sockpair='define'
 d_socks5_init='undef'
-d_sprintf_returns_strlen='define'
 d_sqrtl='define'
 d_srand48_r='undef'
 d_srandom_r='undef'
@@ -716,24 +774,25 @@ d_stdio_ptr_lval_sets_cnt='undef'
 d_stdio_stream_array='undef'
 d_stdiobase='define'
 d_stdstdio='define'
-d_strchr='define'
 d_strcoll='define'
-d_strctcpy='define'
-d_strerrm='strerror(e)'
-d_strerror='define'
+d_strerror_l='define'
 d_strerror_r='define'
 d_strftime='define'
 d_strlcat='define'
 d_strlcpy='define'
+d_strnlen='define'
 d_strtod='define'
+d_strtod_l='define'
 d_strtol='define'
 d_strtold='define'
+d_strtold_l='define'
 d_strtoll='define'
 d_strtoq='undef'
 d_strtoul='define'
 d_strtoull='define'
 d_strtouq='undef'
 d_strxfrm='define'
+d_strxfrm_l='define'
 d_suidsafe='undef'
 d_symlink='define'
 d_syscall='undef'
@@ -747,12 +806,16 @@ d_tcsetpgrp='define'
 d_telldir='define'
 d_telldirproto='define'
 d_tgamma='define'
+d_thread_local='define'
+d_thread_safe_nl_langinfo_l='define'
 d_time='define'
 d_timegm='define'
 d_times='define'
 d_tm_tm_gmtoff='define'
 d_tm_tm_zone='define'
 d_tmpnam_r='undef'
+d_towlower='define'
+d_towupper='define'
 d_trunc='define'
 d_truncate='define'
 d_truncl='define'
@@ -763,6 +826,7 @@ d_ualarm='define'
 d_umask='define'
 d_uname='define'
 d_union_semun='undef'
+d_unlinkat='define'
 d_unordered='undef'
 d_unsetenv='define'
 d_uselocale='define'
@@ -777,11 +841,10 @@ d_vfork='undef'
 d_void_closedir='undef'
 d_voidsig='define'
 d_voidtty=''
-d_volatile='define'
-d_vprintf='define'
 d_vsnprintf='define'
 d_wait4='define'
 d_waitpid='define'
+d_wcrtomb='define'
 d_wcscmp='define'
 d_wcstombs='define'
 d_wcsxfrm='define'
@@ -791,9 +854,10 @@ d_xenix='undef'
 date='date'
 db_hashtype='u_int32_t'
 db_prefixtype='size_t'
-db_version_major='5'
-db_version_minor='3'
-db_version_patch='28'
+db_version_major=''
+db_version_minor=''
+db_version_patch=''
+default_inc_excludes_dot='define'
 direntrytype='struct dirent'
 dlext='dll'
 dlsrc='dl_dlopen.xs'
@@ -806,7 +870,8 @@ drand01='Perl_drand48()'
 drand48_r_proto='0'
 dtrace=''
 dtraceobject=''
-dynamic_ext='B Compress/Raw/Bzip2 Compress/Raw/Zlib Cwd DB_File Data/Dumper Devel/PPPort Devel/Peek Digest/MD5 Digest/SHA Encode Fcntl File/DosGlob File/Glob Filter/Util/Call GDBM_File Hash/Util Hash/Util/FieldHash I18N/Langinfo IO IPC/SysV List/Util MIME/Base64 Math/BigInt/FastCalc NDBM_File ODBM_File Opcode POSIX PerlIO/encoding PerlIO/mmap PerlIO/scalar PerlIO/via SDBM_File Socket Storable Sys/Hostname Sys/Syslog Tie/Hash/NamedCapture Time/HiRes Time/Piece Unicode/Collate Unicode/Normalize Win32 Win32API/File XS/APItest XS/Typemap arybase attributes mro re threads threads/shared'
+dtracexnolibs=''
+dynamic_ext='B Compress/Raw/Bzip2 Compress/Raw/Zlib Cwd Data/Dumper Devel/PPPort Devel/Peek Digest/MD5 Digest/SHA Encode Fcntl File/DosGlob File/Glob Filter/Util/Call Hash/Util Hash/Util/FieldHash I18N/Langinfo IO IPC/SysV List/Util MIME/Base64 Math/BigInt/FastCalc NDBM_File Opcode POSIX PerlIO/encoding PerlIO/mmap PerlIO/scalar PerlIO/via SDBM_File Socket Storable Sys/Hostname Sys/Syslog Time/HiRes Time/Piece Unicode/Collate Unicode/Normalize Win32 Win32API/File XS/APItest XS/Typemap attributes mro re threads threads/shared'
 eagain='EAGAIN'
 ebcdic='undef'
 echo='echo'
@@ -821,7 +886,7 @@ endservent_r_proto='0'
 eunicefix=':'
 exe_ext='.exe'
 expr='expr'
-extensions='B Compress/Raw/Bzip2 Compress/Raw/Zlib Cwd DB_File Data/Dumper Devel/PPPort Devel/Peek Digest/MD5 Digest/SHA Encode Fcntl File/DosGlob File/Glob Filter/Util/Call GDBM_File Hash/Util Hash/Util/FieldHash I18N/Langinfo IO IPC/SysV List/Util MIME/Base64 Math/BigInt/FastCalc NDBM_File ODBM_File Opcode POSIX PerlIO/encoding PerlIO/mmap PerlIO/scalar PerlIO/via SDBM_File Socket Storable Sys/Hostname Sys/Syslog Tie/Hash/NamedCapture Time/HiRes Time/Piece Unicode/Collate Unicode/Normalize Win32 Win32API/File XS/APItest XS/Typemap arybase attributes mro re threads threads/shared Win32CORE Archive/Tar Attribute/Handlers AutoLoader B/Debug CPAN CPAN/Meta CPAN/Meta/Requirements CPAN/Meta/YAML Carp Config/Perl/V Devel/SelfStubber Digest Dumpvalue Env Errno Exporter ExtUtils/CBuilder ExtUtils/Constant ExtUtils/Install ExtUtils/MakeMaker ExtUtils/Manifest ExtUtils/Miniperl ExtUtils/ParseXS File/Fetch File/Find File/Path File/Temp FileCache Filter/Simple Getopt/Long HTTP/Tiny I18N/Collate I18N/LangTags IO/Compress IO/Socket/IP IO/Zlib IPC/Cmd IPC/Open3 JSON/PP Locale/Codes Locale/Maketext Locale/Maketext/Simple Math/BigInt Math/BigRat Math/Complex Memoize Module/CoreList Module/Load Module/Load/Conditional Module/Loaded Module/Metadata NEXT Net/Ping Params/Check Parse/CPAN/Meta Perl/OSType PerlIO/via/QuotedPrint Pod/Checker Pod/Escapes Pod/Functions Pod/Html Pod/Parser Pod/Perldoc Pod/Simple Pod/Usage Safe Search/Dict SelfLoader Term/ANSIColor Term/Cap Term/Complete Term/ReadLine Test Test/Harness Test/Simple Text/Abbrev Text/Balanced Text/ParseWords Text/Tabs Thread/Queue Thread/Semaphore Tie/File Tie/Memoize Tie/RefHash Time/Local XSLoader autodie autouse base bignum constant encoding/warnings experimental if lib libnet parent perlfaq podlators version'
+extensions='B Compress/Raw/Bzip2 Compress/Raw/Zlib Cwd Data/Dumper Devel/PPPort Devel/Peek Digest/MD5 Digest/SHA Encode Fcntl File/DosGlob File/Glob Filter/Util/Call Hash/Util Hash/Util/FieldHash I18N/Langinfo IO IPC/SysV List/Util MIME/Base64 Math/BigInt/FastCalc NDBM_File Opcode POSIX PerlIO/encoding PerlIO/mmap PerlIO/scalar PerlIO/via SDBM_File Socket Storable Sys/Hostname Sys/Syslog Time/HiRes Time/Piece Unicode/Collate Unicode/Normalize Win32 Win32API/File XS/APItest XS/Typemap attributes mro re threads threads/shared Win32CORE Archive/Tar Attribute/Handlers AutoLoader CPAN CPAN/Meta CPAN/Meta/Requirements CPAN/Meta/YAML Carp Config/Perl/V Devel/SelfStubber Digest Dumpvalue Env Errno Exporter ExtUtils/CBuilder ExtUtils/Constant ExtUtils/Install ExtUtils/MakeMaker ExtUtils/Manifest ExtUtils/Miniperl ExtUtils/PL2Bat ExtUtils/ParseXS File/Fetch File/Find File/Path File/Temp FileCache Filter/Simple FindBin Getopt/Long HTTP/Tiny I18N/Collate I18N/LangTags IO/Compress IO/Socket/IP IO/Zlib IPC/Cmd IPC/Open3 JSON/PP Locale/Maketext Locale/Maketext/Simple Math/BigInt Math/BigRat Math/Complex Memoize Module/CoreList Module/Load Module/Load/Conditional Module/Loaded Module/Metadata NEXT Net/Ping Params/Check Perl/OSType PerlIO/via/QuotedPrint Pod/Checker Pod/Escapes Pod/Functions Pod/Html Pod/Perldoc Pod/Simple Pod/Usage Safe Search/Dict SelfLoader Term/ANSIColor Term/Cap Term/Complete Term/ReadLine Test Test/Harness Test/Simple Text/Abbrev Text/Balanced Text/ParseWords Text/Tabs Thread/Queue Thread/Semaphore Tie/File Tie/Hash/NamedCapture Tie/Memoize Tie/RefHash Time/Local XSLoader autodie autouse base bignum constant encoding/warnings experimental if lib libnet parent perlfaq podlators version'
 extern_C='extern'
 extras=''
 fflushNULL='define'
@@ -838,7 +903,7 @@ full_csh='csh'
 full_sed='/usr/bin/sed'
 gccansipedantic=''
 gccosandvers=''
-gccversion='6.3.0'
+gccversion='13.2.0'
 getgrent_r_proto='0'
 getgrgid_r_proto='REENTRANT_PROTO_I_TSBWR'
 getgrnam_r_proto='REENTRANT_PROTO_I_CSBWR'
@@ -884,6 +949,7 @@ html3dir=' '
 html3direxp=''
 i16size='2'
 i16type='short'
+i32dformat='"d"'
 i32size='4'
 i32type='int'
 i64size='8'
@@ -891,21 +957,19 @@ i64type='long'
 i8size='1'
 i8type='signed char'
 i_arpainet='define'
-i_assert='define'
 i_bfd='define'
 i_bsdioctl=''
 i_crypt='define'
-i_db='define'
-i_dbm='define'
+i_db='undef'
+i_dbm='undef'
 i_dirent='define'
 i_dlfcn='define'
 i_execinfo='undef'
 i_fcntl='undef'
 i_fenv='define'
-i_float='define'
 i_fp='undef'
 i_fp_class='undef'
-i_gdbm='define'
+i_gdbm='undef'
 i_gdbm_ndbm='undef'
 i_gdbmndbm='undef'
 i_grp='define'
@@ -918,8 +982,6 @@ i_locale='define'
 i_machcthr='undef'
 i_malloc='define'
 i_mallocmalloc='undef'
-i_math='define'
-i_memory='undef'
 i_mntent='define'
 i_ndbm='define'
 i_netdb='define'
@@ -935,9 +997,7 @@ i_rpcsvcdbm='undef'
 i_sgtty='undef'
 i_shadow='undef'
 i_socks='undef'
-i_stdarg='define'
 i_stdbool='define'
-i_stddef='define'
 i_stdint='define'
 i_stdlib='define'
 i_string='define'
@@ -962,6 +1022,7 @@ i_syssockio='undef'
 i_sysstat='define'
 i_sysstatfs='define'
 i_sysstatvfs='define'
+i_syssyscall='undef'
 i_systime='define'
 i_systimek='undef'
 i_systimes='define'
@@ -973,20 +1034,19 @@ i_sysvfs='define'
 i_syswait='define'
 i_termio='undef'
 i_termios='define'
-i_time='undef'
+i_time='define'
 i_unistd='define'
 i_ustat='undef'
 i_utime='define'
-i_values='undef'
-i_varargs='undef'
-i_varhdr='stdarg.h'
 i_vfork='undef'
+i_wchar='define'
+i_wctype='define'
 i_xlocale='undef'
 ignore_versioned_solibs='y'
 inc_version_list=' '
 inc_version_list_init='0'
 incpath=''
-incpth='/usr/lib/gcc/x86_64-pc-msys/6.3.0/include /usr/include'
+incpth='/usr/lib/gcc/x86_64-pc-msys/13.2.0/include /usr/include'
 inews=''
 initialinstalllocation='/usr/bin'
 installarchlib='/usr/lib/perl5/core_perl'
@@ -1018,11 +1078,11 @@ installvendorman1dir='/usr/share/man/man1'
 installvendorman3dir='/usr/share/man/man3'
 installvendorscript='/usr/bin/vendor_perl'
 intsize='4'
-issymlink=''
+issymlink='test -h'
 ivdformat='"ld"'
 ivsize='8'
 ivtype='long'
-known_extensions='Amiga/ARexx Amiga/Exec Archive/Tar Attribute/Handlers AutoLoader B B/Debug CPAN CPAN/Meta CPAN/Meta/Requirements CPAN/Meta/YAML Carp Compress/Raw/Bzip2 Compress/Raw/Zlib Config/Perl/V Cwd DB_File Data/Dumper Devel/PPPort Devel/Peek Devel/SelfStubber Digest Digest/MD5 Digest/SHA Dumpvalue Encode Env Errno Exporter ExtUtils/CBuilder ExtUtils/Constant ExtUtils/Install ExtUtils/MakeMaker ExtUtils/Manifest ExtUtils/Miniperl ExtUtils/ParseXS Fcntl File/DosGlob File/Fetch File/Find File/Glob File/Path File/Temp FileCache Filter/Simple Filter/Util/Call GDBM_File Getopt/Long HTTP/Tiny Hash/Util Hash/Util/FieldHash I18N/Collate I18N/LangTags I18N/Langinfo IO IO/Compress IO/Socket/IP IO/Zlib IPC/Cmd IPC/Open3 IPC/SysV JSON/PP List/Util Locale/Codes Locale/Maketext Locale/Maketext/Simple MIME/Base64 Math/BigInt Math/BigInt/FastCalc Math/BigRat Math/Complex Memoize Module/CoreList Module/Load Module/Load/Conditional Module/Loaded Module/Metadata NDBM_File NEXT Net/Ping ODBM_File Opcode POSIX Params/Check Parse/CPAN/Meta Perl/OSType PerlIO/encoding PerlIO/mmap PerlIO/scalar PerlIO/via PerlIO/via/QuotedPrint Pod/Checker Pod/Escapes Pod/Functions Pod/Html Pod/Parser Pod/Perldoc Pod/Simple Pod/Usage SDBM_File Safe Search/Dict SelfLoader Socket Storable Sys/Hostname Sys/Syslog Term/ANSIColor Term/Cap Term/Complete Term/ReadLine Test Test/Harness Test/Simple Text/Abbrev Text/Balanced Text/ParseWords Text/Tabs Thread/Queue Thread/Semaphore Tie/File Tie/Hash/NamedCapture Tie/Memoize Tie/RefHash Time/HiRes Time/Local Time/Piece Unicode/Collate Unicode/Normalize VMS/DCLsym VMS/Filespec VMS/Stdio Win32 Win32API/File Win32CORE XS/APItest XS/Typemap XSLoader arybase attributes autodie autouse base bignum constant encoding/warnings experimental if lib libnet mro parent perlfaq podlators re threads threads/shared version '
+known_extensions='Amiga/ARexx Amiga/Exec Archive/Tar Attribute/Handlers AutoLoader B CPAN CPAN/Meta CPAN/Meta/Requirements CPAN/Meta/YAML Carp Compress/Raw/Bzip2 Compress/Raw/Zlib Config/Perl/V Cwd DB_File Data/Dumper Devel/PPPort Devel/Peek Devel/SelfStubber Digest Digest/MD5 Digest/SHA Dumpvalue Encode Env Errno Exporter ExtUtils/CBuilder ExtUtils/Constant ExtUtils/Install ExtUtils/MakeMaker ExtUtils/Manifest ExtUtils/Miniperl ExtUtils/PL2Bat ExtUtils/ParseXS Fcntl File/DosGlob File/Fetch File/Find File/Glob File/Path File/Temp FileCache Filter/Simple Filter/Util/Call FindBin GDBM_File Getopt/Long HTTP/Tiny Hash/Util Hash/Util/FieldHash I18N/Collate I18N/LangTags I18N/Langinfo IO IO/Compress IO/Socket/IP IO/Zlib IPC/Cmd IPC/Open3 IPC/SysV JSON/PP List/Util Locale/Maketext Locale/Maketext/Simple MIME/Base64 Math/BigInt Math/BigInt/FastCalc Math/BigRat Math/Complex Memoize Module/CoreList Module/Load Module/Load/Conditional Module/Loaded Module/Metadata NDBM_File NEXT Net/Ping ODBM_File Opcode POSIX Params/Check Perl/OSType PerlIO/encoding PerlIO/mmap PerlIO/scalar PerlIO/via PerlIO/via/QuotedPrint Pod/Checker Pod/Escapes Pod/Functions Pod/Html Pod/Perldoc Pod/Simple Pod/Usage SDBM_File Safe Search/Dict SelfLoader Socket Storable Sys/Hostname Sys/Syslog Term/ANSIColor Term/Cap Term/Complete Term/ReadLine Test Test/Harness Test/Simple Text/Abbrev Text/Balanced Text/ParseWords Text/Tabs Thread/Queue Thread/Semaphore Tie/File Tie/Hash/NamedCapture Tie/Memoize Tie/RefHash Time/HiRes Time/Local Time/Piece Unicode/Collate Unicode/Normalize VMS/DCLsym VMS/Filespec VMS/Stdio Win32 Win32API/File Win32CORE XS/APItest XS/Typemap XSLoader attributes autodie autouse base bignum constant encoding/warnings experimental if lib libnet mro parent perlfaq podlators re threads threads/shared version '
 ksh=''
 ld='g++'
 ld_can_script='undef'
@@ -1033,14 +1093,14 @@ ldlibpthname='PATH'
 less='less.exe'
 lib_ext='.a'
 libc='/usr/lib/libmsys-2.0.a'
-libperl='msys-perl5_24.dll'
+libperl='msys-perl5_38.dll'
 libpth='/usr/lib'
-libs='-lpthread -lgdbm -ldb -ldl -lcrypt -lgdbm_compat'
+libs='-lpthread -ldl -lcrypt'
 libsdirs=' /usr/lib'
-libsfiles=' libpthread.a libgdbm.dll.a libdb.dll.a libdl.a libcrypt.dll.a libgdbm_compat.dll.a'
-libsfound=' /usr/lib/libpthread.a /usr/lib/libgdbm.dll.a /usr/lib/libdb.dll.a /usr/lib/libdl.a /usr/lib/libcrypt.dll.a /usr/lib/libgdbm_compat.dll.a'
+libsfiles=' libpthread.a libdl.a libcrypt.dll.a'
+libsfound=' /usr/lib/libpthread.a /usr/lib/libdl.a /usr/lib/libcrypt.dll.a'
 libspath=' /usr/lib'
-libswanted='   cl pthread socket bind inet nsl ndbm gdbm dbm db malloc dl ld sun crypt sec cposix posix ucb bsd BSD    gdbm_compat'
+libswanted='   cl pthread socket bind inet ndbm gdbm dbm db malloc dl ld sun crypt sec cposix posix ucb bsd BSD    gdbm_compat'
 libswanted_uselargefiles=''
 line=''
 lint=''
@@ -1050,10 +1110,10 @@ lns='/usr/bin/ln.exe -s'
 localtime_r_proto='REENTRANT_PROTO_S_TS'
 locincpth='/usr/local/include /opt/local/include /usr/gnu/include /opt/gnu/include /usr/GNU/include /opt/GNU/include'
 loclibpth=' '
-longdblinfbytes='0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xff, 0x7f, 0x18, 0x80, 0x01, 0x00, 0x00, 0x00'
+longdblinfbytes='0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xff, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00'
 longdblkind='3'
 longdblmantbits='64'
-longdblnanbytes='0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0xff, 0xff, 0x30, 0x80, 0x01, 0x00, 0x00, 0x00'
+longdblnanbytes='0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00'
 longdblsize='16'
 longlongsize='8'
 longsize='8'
@@ -1084,19 +1144,19 @@ more='more'
 multiarch='undef'
 mv=''
 myarchname='x86_64-msys'
-mydomain='.nonet'
-myhostname='warlock'
-myuname='msys_nt-6.1 warlock 2.7.0(0.30653) 2017-02-14 08:57 x86_64 msys '
+mydomain='.mtkabznonhfulkjzqodficwsvg.bx.internal.cloudapp.net'
+myhostname='fv-az534-830'
+myuname='msys_nt-10.0-20348 fv-az534-830 3.4.10-b7ef037e.x86_64 2023-11-29 23:04 utc x86_64 msys '
 n='-n'
 need_va_copy='undef'
 netdb_hlen_type='int'
-netdb_host_type='const char *'
+netdb_host_type='const void *'
 netdb_name_type='const char *'
 netdb_net_type='long'
 nm='nm'
 nm_opt=''
 nm_so_opt=''
-nonxs_ext='Archive/Tar Attribute/Handlers AutoLoader B/Debug CPAN CPAN/Meta CPAN/Meta/Requirements CPAN/Meta/YAML Carp Config/Perl/V Devel/SelfStubber Digest Dumpvalue Env Errno Exporter ExtUtils/CBuilder ExtUtils/Constant ExtUtils/Install ExtUtils/MakeMaker ExtUtils/Manifest ExtUtils/Miniperl ExtUtils/ParseXS File/Fetch File/Find File/Path File/Temp FileCache Filter/Simple Getopt/Long HTTP/Tiny I18N/Collate I18N/LangTags IO/Compress IO/Socket/IP IO/Zlib IPC/Cmd IPC/Open3 JSON/PP Locale/Codes Locale/Maketext Locale/Maketext/Simple Math/BigInt Math/BigRat Math/Complex Memoize Module/CoreList Module/Load Module/Load/Conditional Module/Loaded Module/Metadata NEXT Net/Ping Params/Check Parse/CPAN/Meta Perl/OSType PerlIO/via/QuotedPrint Pod/Checker Pod/Escapes Pod/Functions Pod/Html Pod/Parser Pod/Perldoc Pod/Simple Pod/Usage Safe Search/Dict SelfLoader Term/ANSIColor Term/Cap Term/Complete Term/ReadLine Test Test/Harness Test/Simple Text/Abbrev Text/Balanced Text/ParseWords Text/Tabs Thread/Queue Thread/Semaphore Tie/File Tie/Memoize Tie/RefHash Time/Local XSLoader autodie autouse base bignum constant encoding/warnings experimental if lib libnet parent perlfaq podlators version'
+nonxs_ext='Archive/Tar Attribute/Handlers AutoLoader CPAN CPAN/Meta CPAN/Meta/Requirements CPAN/Meta/YAML Carp Config/Perl/V Devel/SelfStubber Digest Dumpvalue Env Errno Exporter ExtUtils/CBuilder ExtUtils/Constant ExtUtils/Install ExtUtils/MakeMaker ExtUtils/Manifest ExtUtils/Miniperl ExtUtils/PL2Bat ExtUtils/ParseXS File/Fetch File/Find File/Path File/Temp FileCache Filter/Simple FindBin Getopt/Long HTTP/Tiny I18N/Collate I18N/LangTags IO/Compress IO/Socket/IP IO/Zlib IPC/Cmd IPC/Open3 JSON/PP Locale/Maketext Locale/Maketext/Simple Math/BigInt Math/BigRat Math/Complex Memoize Module/CoreList Module/Load Module/Load/Conditional Module/Loaded Module/Metadata NEXT Net/Ping Params/Check Perl/OSType PerlIO/via/QuotedPrint Pod/Checker Pod/Escapes Pod/Functions Pod/Html Pod/Perldoc Pod/Simple Pod/Usage Safe Search/Dict SelfLoader Term/ANSIColor Term/Cap Term/Complete Term/ReadLine Test Test/Harness Test/Simple Text/Abbrev Text/Balanced Text/ParseWords Text/Tabs Thread/Queue Thread/Semaphore Tie/File Tie/Hash/NamedCapture Tie/Memoize Tie/RefHash Time/Local XSLoader autodie autouse base bignum constant encoding/warnings experimental if lib libnet parent perlfaq podlators version'
 nroff='nroff'
 nvEUformat='"E"'
 nvFUformat='"F"'
@@ -1112,20 +1172,21 @@ nvtype='double'
 o_nonblock='O_NONBLOCK'
 obj_ext='.o'
 old_pthread_create_joinable=''
-optimize='-march=x86-64 -mtune=generic -O2 -pipe'
+optimize='-march=nocona -msahf -mtune=generic -O2 -pipe'
 orderlib='false'
 osname='msys'
-osvers='2.7.0(0.30653)'
+osvers='3.4.10-b7ef037e.x86_64'
 otherlibdirs=' '
 package='perl5'
 pager='/usr/bin/less.exe -R'
-passcat=''
-patchlevel='24'
+passcat='cat /etc/passwd'
+patchlevel='38'
 path_sep=':'
-perl5='/usr/bin/perl'
 perl='perl'
+perl5='/usr/bin/perl'
 perl_patchlevel=''
 perl_static_inline='static __inline__'
+perl_thread_local='_Thread_local'
 perladmin=''
 perllibs='-lpthread -ldl -lcrypt'
 perlpath='/usr/bin/perl'
@@ -1160,8 +1221,8 @@ run=''
 runnm='false'
 sGMTIME_max='67767976233532799'
 sGMTIME_min='-62167219200'
-sLOCALTIME_max='67767976233521999'
-sLOCALTIME_min='-62167228217'
+sLOCALTIME_max='67767976233532799'
+sLOCALTIME_min='-62167219200'
 sPRIEUldbl='"LE"'
 sPRIFUldbl='"LF"'
 sPRIGUldbl='"LG"'
@@ -1238,6 +1299,8 @@ srand48_r_proto='0'
 srandom_r_proto='0'
 src='.'
 ssizetype='ssize_t'
+st_dev_sign='1'
+st_dev_size='4'
 st_ino_sign='1'
 st_ino_size='8'
 startperl='#!/usr/bin/perl'
@@ -1251,12 +1314,13 @@ stdio_filbuf=''
 stdio_ptr='((fp)->_p)'
 stdio_stream_array=''
 strerror_r_proto='REENTRANT_PROTO_B_IBW'
-strings='/usr/include/string.h'
 submit=''
-subversion='1'
+subversion='2'
 sysman='/usr/share/man/man1'
 sysroot=''
 tail=''
+taint_disabled=''
+taint_support=''
 tar=''
 targetarch=''
 targetdir=''
@@ -1279,8 +1343,12 @@ troff=''
 ttyname_r_proto='REENTRANT_PROTO_I_IBW'
 u16size='2'
 u16type='unsigned short'
+u32XUformat='"X"'
+u32oformat='"o"'
 u32size='4'
 u32type='unsigned int'
+u32uformat='"u"'
+u32xformat='"x"'
 u64size='8'
 u64type='unsigned long'
 u8size='1'
@@ -1292,17 +1360,18 @@ uidtype='uid_t'
 uname='uname'
 uniq='uniq'
 uquadtype='unsigned long'
-use5005threads='undef'
 use64bitall='define'
 use64bitint='define'
 usecbacktrace='undef'
 usecrosscompile='undef'
+usedefaultstrict='undef'
 usedevel='undef'
 usedl='define'
 usedtrace='undef'
 usefaststdio='undef'
 useithreads='define'
 usekernprocpathname='undef'
+uselanginfo='true'
 uselargefiles='define'
 uselongdouble='undef'
 usemallocwrap='undef'
@@ -1332,7 +1401,6 @@ uvsize='8'
 uvtype='unsigned long'
 uvuformat='"lu"'
 uvxformat='"lx"'
-vaproto='define'
 vendorarch='/usr/lib/perl5/vendor_perl'
 vendorarchexp='/usr/lib/perl5/vendor_perl'
 vendorbin='/usr/bin'
@@ -1352,11 +1420,12 @@ vendorprefix='/usr'
 vendorprefixexp='/usr'
 vendorscript='/usr/bin/vendor_perl'
 vendorscriptexp='/usr/bin/vendor_perl'
-version='5.24.1'
-version_patchlevel_string='version 24 subversion 1'
+version='5.38.2'
+version_patchlevel_string='version 38 subversion 2'
 versiononly='undef'
 vi=''
 xlibpth='/usr/lib/386 /lib/386'
+xlocale_needed='undef'
 yacc='yacc'
 yaccflags=''
 zcat=''
@@ -1368,21 +1437,39 @@ foreach my $c (7,6,5,4,3,2,1) { $i <<= 8; $i |= ord($c); }
 our $byteorder = join('', unpack('aaaaaaaa', pack('L!', $i)));
 s/(byteorder=)(['"]).*?\2/$1$2$Config::byteorder$2/m;
 
+{
+    # We have to set this up late as Win32 does not build miniperl
+    # with the same defines and CC flags as it builds perl itself.
+    my $defines = join " ", (Internals::V)[0,1];
+    if (
+        $defines =~ /\b(SILENT_NO_TAINT_SUPPORT)\b/ ||
+        $defines =~ /\b(NO_TAINT_SUPPORT)\b/
+    ){
+        my $which = $1;
+        my $taint_disabled = ($which eq "SILENT_NO_TAINT_SUPPORT")
+                             ? "silent" : "define";
+        s/^(taint_disabled=['"])(["'])/$1$taint_disabled$2/m;
+    }
+    else {
+        my $taint_support = 'define';
+        s/^(taint_support=['"])(["'])/$1$taint_support$2/m;
+    }
+}
 my $config_sh_len = length $_;
 
 our $Config_SH_expanded = "\n$_" . << 'EOVIRTUAL';
-ccflags_nolargefiles='-DPERL_USE_SAFE_PUTENV -D_GNU_SOURCE -U__STRICT_ANSI__ -march=x86-64 -mtune=generic -O2 -pipe -fwrapv -fno-strict-aliasing -fstack-protector-strong'
+ccflags_nolargefiles='-DPERL_USE_SAFE_PUTENV -U__STRICT_ANSI__ -D_GNU_SOURCE -march=nocona -msahf -mtune=generic -O2 -pipe -fwrapv -fno-strict-aliasing -fstack-protector-strong -D_FORTIFY_SOURCE=2'
 ldflags_nolargefiles=' -Wl,--enable-auto-import -Wl,--export-all-symbols -Wl,--enable-auto-image-base -fstack-protector-strong'
-libs_nolargefiles='-lpthread -lgdbm -ldb -ldl -lcrypt -lgdbm_compat'
-libswanted_nolargefiles='   cl pthread socket bind inet nsl ndbm gdbm dbm db malloc dl ld sun crypt sec cposix posix ucb bsd BSD    gdbm_compat'
-ccwarnflags=' -Wall -Werror=declaration-after-statement -Wextra -Wc++-compat -Wwrite-strings'
-ccstdflags=' -std=c89'
+libs_nolargefiles='-lpthread -ldl -lcrypt'
+libswanted_nolargefiles='   cl pthread socket bind inet ndbm gdbm dbm db malloc dl ld sun crypt sec cposix posix ucb bsd BSD    gdbm_compat'
+ccwarnflags=' -Wall -Werror=pointer-arith -Werror=vla -Wextra -Wno-long-long -Wno-declaration-after-statement -Wc++-compat -Wwrite-strings -Wno-use-after-free'
+ccstdflags=' -std=c99'
 EOVIRTUAL
 eval {
-	# do not have hairy conniptions if this isnt available
-	require 'Config_git.pl';
-	$Config_SH_expanded .= $Config::Git_Data;
-	1;
+        # do not have hairy conniptions if this isnt available
+        require 'Config_git.pl';
+        $Config_SH_expanded .= $Config::Git_Data;
+        1;
 } or warn "Warning: failed to load Config_git.pl, something strange about this perl...\n";
 
 # Search for it in the big string
@@ -1431,23 +1518,23 @@ sub config_re {
 sub config_vars {
     # implements -V:cfgvar option (see perlrun -V:)
     foreach (@_) {
-	# find optional leading, trailing colons; and query-spec
-	my ($notag,$qry,$lncont) = m/^(:)?(.*?)(:)?$/;	# flags fore and aft,
-	# map colon-flags to print decorations
-	my $prfx = $notag ? '': "$qry=";		# tag-prefix for print
-	my $lnend = $lncont ? ' ' : ";\n";		# line ending for print
+        # find optional leading, trailing colons; and query-spec
+        my ($notag,$qry,$lncont) = m/^(:)?(.*?)(:)?$/;  # flags fore and aft,
+        # map colon-flags to print decorations
+        my $prfx = $notag ? '': "$qry=";                # tag-prefix for print
+        my $lnend = $lncont ? ' ' : ";\n";              # line ending for print
 
-	# all config-vars are by definition \w only, any \W means regex
-	if ($qry =~ /\W/) {
-	    my @matches = config_re($qry);
-	    print map "$_$lnend", @matches ? @matches : "$qry: not found"		if !$notag;
-	    print map { s/\w+=//; "$_$lnend" } @matches ? @matches : "$qry: not found"	if  $notag;
-	} else {
-	    my $v = (exists $Config::Config{$qry}) ? $Config::Config{$qry}
-						   : 'UNKNOWN';
-	    $v = 'undef' unless defined $v;
-	    print "${prfx}'${v}'$lnend";
-	}
+        # all config-vars are by definition \w only, any \W means regex
+        if ($qry =~ /\W/) {
+            my @matches = config_re($qry);
+            print map "$_$lnend", @matches ? @matches : "$qry: not found"               if !$notag;
+            print map { s/\w+=//; "$_$lnend" } @matches ? @matches : "$qry: not found"  if  $notag;
+        } else {
+            my $v = (exists $Config::Config{$qry}) ? $Config::Config{$qry}
+                                                   : 'UNKNOWN';
+            $v = 'undef' unless defined $v;
+            print "${prfx}'${v}'$lnend";
+        }
     }
 }
 

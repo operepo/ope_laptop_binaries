@@ -2,13 +2,12 @@ package Test::Builder::Module;
 
 use strict;
 
-use Test::Builder 1.00;
+use Test::Builder;
 
 require Exporter;
 our @ISA = qw(Exporter);
 
-our $VERSION = '1.001014';
-$VERSION = eval $VERSION;      ## no critic (BuiltinFunctions::ProhibitStringyEval)
+our $VERSION = '1.302194';
 
 
 =head1 NAME
@@ -22,14 +21,14 @@ Test::Builder::Module - Base class for test modules
 
   my $CLASS = __PACKAGE__;
 
-  use base 'Test::Builder::Module';
+  use parent 'Test::Builder::Module';
   @EXPORT = qw(ok);
 
   sub ok ($;$) {
       my $tb = $CLASS->builder;
       return $tb->ok(@_);
   }
-
+  
   1;
 
 
@@ -56,8 +55,8 @@ same basic way as L<Test::More>'s, setting the plan and controlling
 exporting of functions and variables.  This allows your module to set
 the plan independent of L<Test::More>.
 
-All arguments passed to C<import()> are passed onto
-C<< Your::Module->builder->plan() >> with the exception of
+All arguments passed to C<import()> are passed onto 
+C<< Your::Module->builder->plan() >> with the exception of 
 C<< import =>[qw(things to import)] >>.
 
     use Your::Module import => [qw(this that)], tests => 23;
@@ -76,6 +75,8 @@ C<import_extra()>.
 sub import {
     my($class) = shift;
 
+    Test2::API::test2_load() unless Test2::API::test2_in_preload();
+
     # Don't run all this when loading ourself.
     return 1 if $class eq 'Test::Builder::Module';
 
@@ -90,7 +91,8 @@ sub import {
 
     $test->plan(@_);
 
-    $class->export_to_level( 1, $class, @imports );
+    local $Exporter::ExportLevel = $Exporter::ExportLevel + 1;
+    $class->Exporter::import(@imports);
 }
 
 sub _strip_imports {
@@ -169,5 +171,12 @@ call C<builder()> inside each function rather than store it in a global.
 sub builder {
     return Test::Builder->new;
 }
+
+=head1 SEE ALSO
+
+L<< Test2::Manual::Tooling::TestBuilder >> describes the improved
+options for writing testing modules provided by L<< Test2 >>.
+
+=cut
 
 1;

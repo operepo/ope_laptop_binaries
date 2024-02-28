@@ -26,7 +26,7 @@ BEGIN
 our ($Error);
 
 our ($VERSION, @EXPORT_OK);
-$VERSION = '1.000';
+$VERSION = '1.001';
 @EXPORT_OK = qw( globmap );
 
 
@@ -51,7 +51,7 @@ sub globmap ($$;)
     my $inputGlob = shift ;
     my $outputGlob = shift ;
 
-    my $obj = new File::GlobMapper($inputGlob, $outputGlob, @_)
+    my $obj = File::GlobMapper->new($inputGlob, $outputGlob, @_)
         or croak "globmap: $Error" ;
     return $obj->getFileMap();
 }
@@ -149,7 +149,7 @@ sub _parseBit
 
         if ($2 eq ',')
         {
-            return _unmatched "("
+            return _unmatched("(")
                 if $depth ;
 
             $out .= '|';
@@ -160,7 +160,7 @@ sub _parseBit
         }
         elsif ($2 eq ')')
         {
-            return _unmatched ")"
+            return _unmatched(")")
                 if ! $depth ;
 
             -- $depth ;
@@ -170,22 +170,22 @@ sub _parseBit
             # TODO -- quotemeta & check no '/'
             # TODO -- check for \]  & other \ within the []
             $string =~ s#(.*?\])##
-                or return _unmatched "[" ;
+                or return _unmatched("[");
             $out .= "$1)" ;
         }
         elsif ($2 eq ']')
         {
-            return _unmatched "]" ;
+            return _unmatched("]");
         }
         elsif ($2 eq '{' || $2 eq '}')
         {
-            return _retError "Nested {} not allowed" ;
+            return _retError("Nested {} not allowed");
         }
     }
 
     $out .= quotemeta $string;
 
-    return _unmatched "("
+    return _unmatched("(")
         if $depth ;
 
     return $out ;
@@ -219,7 +219,7 @@ sub _parseInputGlob
         }
         elsif ($2 eq ')')
         {
-            return _unmatched ")"
+            return _unmatched(")")
                 if ! $depth ;
 
             -- $depth ;
@@ -229,16 +229,16 @@ sub _parseInputGlob
             # TODO -- quotemeta & check no '/' or '(' or ')'
             # TODO -- check for \]  & other \ within the []
             $string =~ s#(.*?\])##
-                or return _unmatched "[";
+                or return _unmatched("[");
             $out .= "$1)" ;
         }
         elsif ($2 eq ']')
         {
-            return _unmatched "]" ;
+            return _unmatched("]");
         }
         elsif ($2 eq '}')
         {
-            return _unmatched "}" ;
+            return _unmatched("}");
         }
         elsif ($2 eq '{')
         {
@@ -248,7 +248,7 @@ sub _parseInputGlob
             my $tmp ;
             unless ( $string =~ s/(.*?)$noPreBS\}//)
             {
-                return _unmatched "{";
+                return _unmatched("{");
             }
             #$string =~ s#(.*?)\}##;
 
@@ -263,7 +263,7 @@ sub _parseInputGlob
         }
     }
 
-    return _unmatched "("
+    return _unmatched("(")
         if $depth ;
 
     $out .= quotemeta $string ;
@@ -383,7 +383,7 @@ File::GlobMapper - Extend File Glob to Allow Input and Output Files
     my $aref = globmap $input => $output
         or die $File::GlobMapper::Error ;
 
-    my $gm = new File::GlobMapper $input => $output
+    my $gm = File::GlobMapper->new( $input => $output )
         or die $File::GlobMapper::Error ;
 
 
