@@ -4,10 +4,9 @@ use 5.006;
 
 use strict;
 
-our $VERSION = '1.001014';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+our $VERSION = '1.302194';
 
-use Test::Builder::Module 0.99;
+use Test::Builder::Module;
 our @ISA    = qw(Test::Builder::Module);
 our @EXPORT = qw(ok);
 
@@ -211,7 +210,7 @@ E<lt>schwern@pobox.comE<gt>, wardrobe by Calvin Klein.
 
 Copyright 2001-2008 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 
-This program is free software; you can redistribute it and/or
+This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.
 
 See F<http://www.perl.com/perl/misc/Artistic.html>

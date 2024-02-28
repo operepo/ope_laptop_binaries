@@ -1,8 +1,7 @@
 package Encode::Alias;
 use strict;
 use warnings;
-no warnings 'redefine';
-our $VERSION = do { my @r = ( q$Revision: 2.20 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
+our $VERSION = do { my @r = ( q$Revision: 2.25 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 use constant DEBUG => !!$ENV{PERL_ENCODE_DEBUG};
 
 use Exporter 'import';
@@ -19,7 +18,6 @@ our @Alias;    # ordered matching list
 our %Alias;    # cached known aliases
 
 sub find_alias {
-    require Encode;
     my $class = shift;
     my $find  = shift;
     unless ( exists $Alias{$find} ) {
@@ -79,8 +77,10 @@ sub find_alias {
 
 sub define_alias {
     while (@_) {
-        my ( $alias, $name ) = splice( @_, 0, 2 );
-        unshift( @Alias, $alias => $name );    # newer one has precedence
+        my $alias = shift;
+        my $name = shift;
+        unshift( @Alias, $alias => $name )    # newer one has precedence
+            if defined $alias;
         if ( ref($alias) ) {
 
             # clear %Alias cache to allow overrides
@@ -96,12 +96,19 @@ sub define_alias {
                 }
             }
         }
-        else {
+        elsif (defined $alias) {
             DEBUG and warn "delete \$Alias\{$alias\}";
             delete $Alias{$alias};
         }
+        elsif (DEBUG) {
+            require Carp;
+            Carp::croak("undef \$alias");
+        }
     }
 }
+
+# HACK: Encode must be used after define_alias is declarated as Encode calls define_alias
+use Encode ();
 
 # Allow latin-1 style names as well
 # 0  1  2  3  4  5   6   7   8   9  10
@@ -128,7 +135,6 @@ sub undef_aliases {
 }
 
 sub init_aliases {
-    require Encode;
     undef_aliases();
 
     # Try all-lower-case version should all else fails
@@ -155,6 +161,10 @@ sub init_aliases {
 
     # Allow variants of iso-8859-1 etc.
     define_alias( qr/\biso[-_]?(\d+)[-_](\d+)$/i => '"iso-$1-$2"' );
+
+    # ISO-8859-8-I => ISO-8859-8
+    # https://en.wikipedia.org/wiki/ISO-8859-8-I
+    define_alias( qr/\biso[-_]8859[-_]8[-_]I$/i => '"iso-8859-8"' );
 
     # At least HP-UX has these.
     define_alias( qr/\biso8859(\d+)$/i => '"iso-8859-$1"' );
@@ -264,7 +274,7 @@ sub init_aliases {
     define_alias( qr/\bUTF-8$/i => '"utf-8-strict"' );
 
     # At last, Map white space and _ to '-'
-    define_alias( qr/^(\S+)[\s_]+(.*)$/i => '"$1-$2"' );
+    define_alias( qr/^([^\s_]+)[\s_]+([^\s_]*)$/i => '"$1-$2"' );
 }
 
 1;
@@ -298,7 +308,7 @@ Encode::Alias - alias definitions to encodings
 =head1 DESCRIPTION
 
 Allows newName to be used as an alias for ENCODING. ENCODING may be
-either the name of an encoding or an encoding object (as described
+either the name of an encoding or an encoding object (as described 
 in L<Encode>).
 
 Currently the first argument to define_alias() can be specified in the
@@ -340,7 +350,7 @@ As of Encode 1.87, the older form
 
   define_alias( sub { return  /^iso8859-(\d+)$/i ? "iso-8859-$1" : undef } );
 
-no longer works.
+no longer works. 
 
 Encode up to 1.86 internally used "local $_" to implement this older
 form.  But consider the code below;

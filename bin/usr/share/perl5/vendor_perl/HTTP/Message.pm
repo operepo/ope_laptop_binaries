@@ -1,11 +1,14 @@
 package HTTP::Message;
 
 use strict;
-use vars qw($VERSION $AUTOLOAD);
-$VERSION = "6.06";
+use warnings;
+
+our $VERSION = '6.45';
 
 require HTTP::Headers;
 require Carp;
+
+our $MAXIMUM_BODY_SIZE;
 
 my $CRLF = "\015\012";   # "\r\n" is not portable
 unless ($HTTP::URI_CLASS) {
@@ -52,9 +55,9 @@ sub new
     bless {
 	'_headers' => $header,
 	'_content' => $content,
+	'_max_body_size' => $HTTP::Message::MAXIMUM_BODY_SIZE,
     }, $class;
 }
-
 
 sub parse
 {
@@ -142,11 +145,11 @@ sub _set_content {
     my $self = $_[0];
     _utf8_downgrade($_[1]);
     if (!ref($_[1]) && ref($self->{_content}) eq "SCALAR") {
-	${$self->{_content}} = $_[1];
+	${$self->{_content}} = defined( $_[1] ) ? $_[1] : '';
     }
     else {
 	die "Can't set content to be a scalar reference" if ref($_[1]) eq "SCALAR";
-	$self->{_content} = $_[1];
+	$self->{_content} = defined( $_[1] ) ? $_[1] : '';
 	delete $self->{_content_ref};
     }
     delete $self->{_parts} unless $_[2];
@@ -276,6 +279,17 @@ sub content_charset
     return undef;
 }
 
+sub max_body_size  {
+    my $self = $_[0];
+    my $old = $self->{_max_body_size};
+    $self->_set_max_body_size($_[1]) if @_ > 1;
+    return $old;
+}
+
+sub _set_max_body_size {
+    my $self = $_[0];
+    $self->{_max_body_size} = $_[1];
+}
 
 sub decoded_content
 {
@@ -287,26 +301,85 @@ sub decoded_content
 	$content_ref = $self->content_ref;
 	die "Can't decode ref content" if ref($content_ref) ne "SCALAR";
 
+	my $content_limit = exists $opt{ max_body_size } ? $opt{ max_body_size }
+			: defined $self->max_body_size ? $self->max_body_size
+			: undef
+			;
+	my %limiter_options;
+	if( defined $content_limit ) {
+	    %limiter_options = (LimitOutput => 1, Bufsize => $content_limit);
+	};
 	if (my $h = $self->header("Content-Encoding")) {
 	    $h =~ s/^\s+//;
 	    $h =~ s/\s+$//;
 	    for my $ce (reverse split(/\s*,\s*/, lc($h))) {
 		next unless $ce;
-		next if $ce eq "identity";
+		next if $ce eq "identity" || $ce eq "none";
 		if ($ce eq "gzip" || $ce eq "x-gzip") {
-		    require IO::Uncompress::Gunzip;
+		    require Compress::Raw::Zlib; # 'WANT_GZIP_OR_ZLIB', 'Z_BUF_ERROR';
+
+		    if( ! $content_ref_iscopy and keys %limiter_options) {
+			# Create a copy of the input because Zlib will overwrite it
+			# :-(
+			my $input = "$$content_ref";
+			$content_ref = \$input;
+			$content_ref_iscopy++;
+		    };
+		    my ($i, $status) = Compress::Raw::Zlib::Inflate->new(
+			%limiter_options,
+			ConsumeInput => 0, # overridden by Zlib if we have %limiter_options :-(
+			WindowBits => Compress::Raw::Zlib::WANT_GZIP_OR_ZLIB(),
+		    );
+		    my $res = $i->inflate( $content_ref, \my $output );
+		    $res == Compress::Raw::Zlib::Z_BUF_ERROR()
+			and Carp::croak("Decoded content would be larger than $content_limit octets");
+		    $res == Compress::Raw::Zlib::Z_OK()
+		    or $res == Compress::Raw::Zlib::Z_STREAM_END()
+		    or die "Can't gunzip content: $res";
+		    $content_ref = \$output;
+		    $content_ref_iscopy++;
+		}
+		elsif ($ce eq 'br') {
+		    require IO::Uncompress::Brotli;
+		    my $bro = IO::Uncompress::Brotli->create;
+
 		    my $output;
-		    IO::Uncompress::Gunzip::gunzip($content_ref, \$output, Transparent => 0)
-			or die "Can't gunzip content: $IO::Uncompress::Gunzip::GunzipError";
+		    if( defined $content_limit ) {
+			$output = eval { $bro->decompress( $$content_ref, $content_limit ); }
+		    } else {
+			$output = eval { $bro->decompress($$content_ref) };
+		    }
+
+		    $@ and die "Can't unbrotli content: $@";
 		    $content_ref = \$output;
 		    $content_ref_iscopy++;
 		}
 		elsif ($ce eq "x-bzip2" or $ce eq "bzip2") {
-		    require IO::Uncompress::Bunzip2;
+		    require Compress::Raw::Bzip2;
+
+		    if( ! $content_ref_iscopy ) {
+			# Create a copy of the input because Bzlib2 will overwrite it
+			# :-(
+			my $input = "$$content_ref";
+			$content_ref = \$input;
+			$content_ref_iscopy++;
+		    };
+		    my ($i, $status) = Compress::Raw::Bunzip2->new(
+			1, # appendInput
+			0, # consumeInput
+			0, # small
+			$limiter_options{ LimitOutput } || 0,
+		    );
 		    my $output;
-		    IO::Uncompress::Bunzip2::bunzip2($content_ref, \$output, Transparent => 0)
-			or die "Can't bunzip content: $IO::Uncompress::Bunzip2::Bunzip2Error";
-		    $content_ref = \$output;
+		    $output = "\0" x $limiter_options{ Bufsize }
+			if $limiter_options{ Bufsize };
+		    my $res = $i->bzinflate( $content_ref, \$output );
+		    $res == Compress::Raw::Bzip2::BZ_OUTBUFF_FULL()
+			and Carp::croak("Decoded content would be larger than $content_limit octets");
+		    $res == Compress::Raw::Bzip2::BZ_OK()
+		    or $res == Compress::Raw::Bzip2::BZ_STREAM_END()
+			or die "Can't bunzip content: $res";
+			    $content_ref = \$output;
 		    $content_ref_iscopy++;
 		}
 		elsif ($ce eq "deflate") {
@@ -359,7 +432,7 @@ sub decoded_content
 		"ISO-8859-1"
 	    );
 	    if ($charset eq "none") {
-		# leave it asis
+		# leave it as is
 	    }
 	    elsif ($charset eq "us-ascii" || $charset eq "iso-8859-1") {
 		if ($$content_ref =~ /[^\x00-\x7F]/ && defined &utf8::upgrade) {
@@ -416,10 +489,11 @@ sub decodable
     # should match the Content-Encoding values that decoded_content can deal with
     my $self = shift;
     my @enc;
+    local $@;
     # XXX preferably we should determine if the modules are available without loading
     # them here
     eval {
-        require IO::Uncompress::Gunzip;
+        require Compress::Raw::Zlib;
         push(@enc, "gzip", "x-gzip");
     };
     eval {
@@ -428,8 +502,12 @@ sub decodable
         push(@enc, "deflate");
     };
     eval {
-        require IO::Uncompress::Bunzip2;
-        push(@enc, "x-bzip2");
+        require Compress::Raw::Bzip2;
+        push(@enc, "x-bzip2", "bzip2");
+    };
+    eval {
+        require IO::Uncompress::Brotli;
+        push(@enc, 'br');
     };
     # we don't care about announcing the 'identity', 'base64' and
     # 'quoted-printable' stuff
@@ -461,7 +539,7 @@ sub encode
 
     my $content = $self->content;
     for my $encoding (@enc) {
-	if ($encoding eq "identity") {
+	if ($encoding eq "identity" || $encoding eq "none") {
 	    # nothing to do
 	}
 	elsif ($encoding eq "base64") {
@@ -482,12 +560,19 @@ sub encode
 		or die "Can't deflate content: $IO::Compress::Deflate::DeflateError";
 	    $content = $output;
 	}
-	elsif ($encoding eq "x-bzip2") {
+	elsif ($encoding eq "x-bzip2" || $encoding eq "bzip2") {
 	    require IO::Compress::Bzip2;
 	    my $output;
 	    IO::Compress::Bzip2::bzip2(\$content, \$output)
 		or die "Can't bzip2 content: $IO::Compress::Bzip2::Bzip2Error";
 	    $content = $output;
+	}
+	elsif ($encoding eq "br") {
+		require IO::Compress::Brotli;
+		my $output;
+		eval { $output = IO::Compress::Brotli::bro($content) }
+		or die "Can't brotli content: $@";
+		$content = $output;
 	}
 	elsif ($encoding eq "rot13") {  # for the fun of it
 	    $content =~ tr/A-Za-z/N-ZA-Mn-za-m/;
@@ -574,6 +659,10 @@ sub dump
     return $dump;
 }
 
+# allow subclasses to override what will handle individual parts
+sub _part_class {
+    return __PACKAGE__;
+}
 
 sub parts {
     my $self = shift;
@@ -602,8 +691,10 @@ sub parts {
 sub add_part {
     my $self = shift;
     if (($self->content_type || "") !~ m,^multipart/,) {
-	my $p = HTTP::Message->new($self->remove_content_headers,
-				   $self->content(""));
+	my $p = $self->_part_class->new(
+	    $self->remove_content_headers,
+	    $self->content(""),
+	);
 	$self->content_type("multipart/mixed");
 	$self->{_parts} = [];
         if ($p->headers->header_field_names || $p->content ne "") {
@@ -632,22 +723,42 @@ sub _stale_content {
     }
 }
 
+# delegate all other method calls to the headers object.
+our $AUTOLOAD;
 
-# delegate all other method calls the the headers object.
-sub AUTOLOAD
-{
-    my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::')+2);
-
-    # We create the function here so that it will not need to be
-    # autoloaded the next time.
-    no strict 'refs';
-    *$method = sub { local $Carp::Internal{+__PACKAGE__} = 1; shift->headers->$method(@_) };
-    goto &$method;
+sub AUTOLOAD {
+    my ( $package, $method ) = $AUTOLOAD =~ m/\A(.+)::([^:]*)\z/;
+    my $code = $_[0]->can($method);
+    Carp::croak(
+        qq(Can't locate object method "$method" via package "$package"))
+        unless $code;
+    goto &$code;
 }
 
+sub can {
+    my ( $self, $method ) = @_;
 
-sub DESTROY {}  # avoid AUTOLOADing it
+    if ( my $own_method = $self->SUPER::can($method) ) {
+        return $own_method;
+    }
 
+    my $headers = ref($self) ? $self->headers : 'HTTP::Headers';
+    if ( $headers->can($method) ) {
+
+        # We create the function here so that it will not need to be
+        # autoloaded or recreated the next time.
+        no strict 'refs';
+        *$method = sub {
+            local $Carp::Internal{ +__PACKAGE__ } = 1;
+            shift->headers->$method(@_);
+        };
+        return \&$method;
+    }
+
+    return undef;
+}
+
+sub DESTROY { }    # avoid AUTOLOADing it
 
 # Private method to access members in %$self
 sub _elem
@@ -673,7 +784,7 @@ sub _parts {
 	    my $str = $self->content;
 	    $str =~ s/\r?\n--\Q$b\E--.*//s;
 	    if ($str =~ s/(^|.*?\r?\n)--\Q$b\E\r?\n//s) {
-		$self->{_parts} = [map HTTP::Message->parse($_),
+		$self->{_parts} = [map $self->_part_class->parse($_),
 				   split(/\r?\n--\Q$b\E\r?\n/, $str)]
 	    }
 	}
@@ -687,7 +798,7 @@ sub _parts {
 	$self->{_parts} = [$class->parse($content)];
     }
     elsif ($ct =~ m,^message/,) {
-	$self->{_parts} = [ HTTP::Message->parse($self->content) ];
+	$self->{_parts} = [ $self->_part_class->parse($self->content) ];
     }
 
     $self->{_parts} ||= [];
@@ -763,16 +874,21 @@ sub _boundary
 
 1;
 
+=pod
 
-__END__
+=encoding UTF-8
 
 =head1 NAME
 
 HTTP::Message - HTTP style message (base class)
 
+=head1 VERSION
+
+version 6.45
+
 =head1 SYNOPSIS
 
- use base 'HTTP::Message';
+ use parent 'HTTP::Message';
 
 =head1 DESCRIPTION
 
@@ -825,6 +941,9 @@ The content() method sets the raw content if an argument is given.  If no
 argument is given the content is not touched.  In either case the
 original raw content is returned.
 
+If the C<undef> argument is given, the content is reset to its default value,
+which is an empty string.
+
 Note that the content should be a string of bytes.  Strings in perl
 can contain characters outside the range of a byte.  The C<Encode>
 module can be used to turn such strings into a string of bytes.
@@ -869,9 +988,14 @@ for details about how charset is determined.
 
 =item $mess->decoded_content( %options )
 
-Returns the content with any C<Content-Encoding> undone and for textual content
-the raw content encoded to Perl's Unicode strings.  If the C<Content-Encoding>
-or C<charset> of the message is unknown this method will fail by returning
+Returns the content with any C<Content-Encoding> undone and, for textual content
+(C<Content-Type> values starting with C<text/>, exactly matching
+C<application/xml>, or ending with C<+xml>), the raw content's character set
+decoded into Perl's Unicode string format. Note that this
+L<does not currently|https://github.com/libwww-perl/HTTP-Message/pull/99>
+attempt to decode declared character sets for any other content types like
+C<application/json> or C<application/javascript>.  If the C<Content-Encoding>
+or C<charset> of the message is unknown, this method will fail by returning
 C<undef>.
 
 The following options can be specified.
@@ -880,12 +1004,12 @@ The following options can be specified.
 
 =item C<charset>
 
-This override the charset parameter for text content.  The value
+This overrides the charset parameter for text content.  The value
 C<none> can used to suppress decoding of the charset.
 
 =item C<default_charset>
 
-This override the default charset guessed by content_charset() or
+This overrides the default charset guessed by content_charset() or
 if that fails "ISO-8859-1".
 
 =item C<alt_charset>
@@ -945,7 +1069,7 @@ want to process its content as a string.
 Apply the given encodings to the content of the message.  Returns TRUE
 if successful. The "identity" (non-)encoding is always supported; other
 currently supported encodings, subject to availability of required
-additional modules, are "gzip", "deflate", "x-bzip2" and "base64".
+additional modules, are "gzip", "deflate", "x-bzip2", "base64" and "br".
 
 A successful call to this function will set the C<Content-Encoding>
 header.
@@ -1097,10 +1221,21 @@ details of these methods:
     $mess->authorization_basic
     $mess->proxy_authorization_basic
 
-=head1 COPYRIGHT
+=head1 AUTHOR
 
-Copyright 1995-2004 Gisle Aas.
+Gisle Aas <gisle@activestate.com>
 
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 1994 by Gisle Aas.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
+__END__
+
+
+#ABSTRACT: HTTP style message (base class)
 

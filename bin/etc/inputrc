@@ -28,8 +28,7 @@ set show-all-if-ambiguous off
 # MSYSTEM is emacs based
 $if mode=emacs
   # Common to Console & RXVT
-  "\C-?": backward-kill-line        # Ctrl-BackSpace
-  "\e[2~": paste-from-clipboard     # "Ins. Key"
+  "\e[2;2~": paste-from-clipboard   # Shift-Insert
   "\e[5~": beginning-of-history     # Page up
   "\e[6~": end-of-history           # Page down
 
@@ -62,6 +61,8 @@ $if mode=emacs
     "\e[1~": beginning-of-line      # Home Key
     "\e[4~": end-of-line            # End Key
     "\e[3~": delete-char            # Delete Key
+    "\e[1;5D": backward-word        # Ctrl-Left
+    "\e[1;5C": forward-word         # Ctrl-Right
     "\e\e[C": forward-word          # Alt-Right
     "\e\e[D": backward-word         # Alt-Left
     "\e[17~": "Function Key 6"

@@ -1,8 +1,9 @@
 #!/usr/bin/perl
     eval 'exec /usr/bin/perl -S $0 ${1+"$@"}'
-	if $running_under_some_shell;
+	if 0; # ^ Run only under a shell
 #!/usr/bin/perl
 use strict;
+use warnings;
 
 BEGIN { pop @INC if $INC[-1] eq '.' }
 use File::Find;
@@ -97,12 +98,12 @@ sub usage {
 
 =head1 NAME
 
-    ptar - a tar-like program written in perl
+ptar - a tar-like program written in perl
 
 =head1 DESCRIPTION
 
-    ptar is a small, tar look-alike program that uses the perl module
-    Archive::Tar to extract, create and list tar archives.
+ptar is a small, tar look-alike program that uses the perl module
+Archive::Tar to extract, create and list tar archives.
 
 =head1 SYNOPSIS
 
@@ -126,7 +127,7 @@ sub usage {
 
 =head1 SEE ALSO
 
-    tar(1), L<Archive::Tar>.
+L<tar(1)>, L<Archive::Tar>.
 
 =cut
 

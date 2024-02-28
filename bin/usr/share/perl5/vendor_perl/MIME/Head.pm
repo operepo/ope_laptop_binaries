@@ -138,7 +138,7 @@ use MIME::Field::ContType;
 #------------------------------
 
 ### The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "5.506";
+$VERSION = "5.510";
 
 ### Sanity (we put this test after our own version, for CPAN::):
 use Mail::Header 1.06 ();
@@ -555,12 +555,17 @@ sub set {
 I<Instance method.>
 Return the header as a string.  You can also invoke it as C<as_string>.
 
+If you set the variable $MIME::Entity::BOUNDARY_DELIMITER to a string,
+that string will be used as line-end delimiter.  If it is not set,
+the line ending will be a newline character (\n)
+
 =cut
 
 sub stringify {
     my $self = shift;          ### build clean header, and output...
     my @header = grep {defined($_) ? $_ : ()} @{$self->header};
-    join "", map { /\n$/ ? $_ : "$_\n" } @header;
+    my $header_delimiter = $MIME::Entity::BOUNDARY_DELIMITER || "\n";
+    join "", map { /\n$/ ? substr($_, 0, -1) . $header_delimiter : $_ . $header_delimiter } @header;
 }
 sub as_string { shift->stringify(@_) }
 
@@ -912,7 +917,7 @@ L<Mail::Header>, L<Mail::Field>, L<MIME::Words>, L<MIME::Tools>
 =head1 AUTHOR
 
 Eryq (F<eryq@zeegee.com>), ZeeGee Software Inc (F<http://www.zeegee.com>).
-Dianne Skoll (dfs@roaringpenguin.com) http://www.roaringpenguin.com
+Dianne Skoll (dianne@skoll.ca)
 
 All rights reserved.  This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.
