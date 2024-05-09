@@ -15,7 +15,7 @@ if [%1] EQU [] (
 
 ) else (
     rem Param provided, use it as the current branch
-    SET GIT_BRANCH=%1    
+    SET GIT_BRANCH=%1
     echo using git branch %GIT_BRANCH%
 )
 
@@ -47,7 +47,7 @@ if /I NOT "%~dp0"=="%GIT_TEMP%" (
     xcopy /ECIHRKY %QUIET_FLAG% "%BASE_FOLDER%mingw64\*" "%GIT_TEMP%mingw64\"
     xcopy /ECIHRKY %QUIET_FLAG% "%BASE_FOLDER%usr\*" "%GIT_TEMP%usr\"
     rem Relaunch from temp folder
-    call "%GIT_TEMP%PullUpdates.cmd" "%GIT_BRANCH%" "%BASE_FOLDER%"
+    call "%GIT_TEMP%PullUpdates.cmd" %GIT_BRANCH% "%BASE_FOLDER%"
     exit /b 0
 ) else (
     echo running from tmp folder, target: %BASE_FOLDER%
@@ -72,7 +72,7 @@ if EXIST %PROJECT_PATH%/.git (
   rem echo "Git repo exists..."
 ) ELSE (
   echo %ESC_GREEN% Initilizing Local Git Repo...
-  %GIT_PATH% -C "%PROJECT_PATH%" init  >> nul 2>&1
+  "%GIT_PATH%" -C "%PROJECT_PATH%" init  >> nul 2>&1
   rem git clean -fd?
   rem We will do a hard reset later and clear all local files
   rem %GIT_PATH% -C "%PROJECT_PATH%" add . >> nul 2>&1
