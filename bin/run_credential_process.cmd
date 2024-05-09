@@ -52,10 +52,10 @@ if "%IsWin10%"=="false" (
 )
 
 echo -- Reset GPO Settings --
-call %~dp0reset_gpo.cmd
+call "%~dp0reset_gpo.cmd"
 
 echo -- Reset Firewall Settings --
-call %~dp0reset_firewall_rules.cmd
+call "%~dp0reset_firewall_rules.cmd"
 
 rem CHECK FOR NETWORK CONNECTION
 echo Testing network connection...
@@ -87,14 +87,14 @@ rem DEBUG - Stop script early when debugging
 rem goto endcredential
 
 echo -- Adding CERT Trusts for OPE Services --
-call %~dp0trust_ope_certs.cmd
+call "%~dp0trust_ope_certs.cmd"
 echo.
 rem Make sure vstudio redists are installed
 echo -- %ESC_GREEN%Installing required packages - please wait... %ESC_RESET% --
-call %~dp0install_vc_runtimes.cmd
+call "%~dp0install_vc_runtimes.cmd"
 echo.
 rem Ask if logs should be cleared
-call %~dp0clear_logs.cmd
+call "%~dp0clear_logs.cmd"
 echo.
 echo.
 echo %ESC_GREEN% Credential Version - %CREDENTIAL_VERSION% %ESC_RESET%
@@ -105,26 +105,26 @@ set credential_app="%~dp0..\laptop_credential\credential.exe"
 REM set credential_app="python %~dp0\laptop_credential\app.py"
 echo %credential_app%
 REM || exit makes the script stop if the credential fails
-%credential_app% 
+"%credential_app%"
 REM %credential_app% || pause && exit /b 1
 IF %ERRORLEVEL% NEQ 0 (
     REM error in credentialing
     echo.
     echo ****** CRITICAL ERROR!!! - CREDENTIAL APP - FINISHED WITH ERROR!!! *******
     echo.
-    call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    call "%programdata%\ope\Services\mgmt\mgmt.exe" bad_credential
     pause
     exit /b 2
     rem exit /b %ERRORLEVEL%
 )
 
 echo -- Installing latest OPEService...
-call %~dp0install_service.cmd 2>NUL 1>NUL
+call "%~dp0install_service.cmd" 2>NUL 1>NUL
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_RED%****** CRITICAL ERROR!!! - ERROR Installing OPEService!!! *******%ESC_RESET%
     echo.
-    call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    call "%programdata%\ope\Services\mgmt\mgmt.exe" bad_credential
     pause
     exit /b 2
 )
@@ -132,28 +132,28 @@ echo.
 
 rem apply only gpo firewall rules?
 echo -- Applying firewall settings...
-call %~dp0import_firewall_rules.cmd
+call "%~dp0import_firewall_rules.cmd"
 echo.
 
 echo -- Applying windows group policy...
-call %~dp0restore_gpo.cmd
+call "%~dp0restore_gpo.cmd"
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_RED%****** CRITICAL ERROR!!! - ERROR Applying Group Policy rules!!! *******%ESC_RESET%
     echo.
-    call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    call "%programdata%\ope\Services\mgmt\mgmt.exe" bad_credential
     pause
     exit /b 2
 )
 echo.
 
 echo -- Locking down boot options...
-call %~dp0lock_down_boot_options.cmd >> nul 2>&1
+call "%~dp0lock_down_boot_options.cmd" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_RED%****** CRITICAL ERROR!!! - ERROR Locking down boot options!!! *******%ESC_RESET%
     echo.
-    call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    call "%programdata%\ope\Services\mgmt\mgmt.exe" bad_credential
     pause
     exit /b 2
 )
@@ -205,7 +205,7 @@ if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_RED%****** CRITICAL ERROR!!! - ERROR Enabling Student Account *******%ESC_RESET%
     echo.
-    call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    call "%programdata%\ope\Services\mgmt\mgmt.exe" bad_credential
     pause
     exit /b 2
 )

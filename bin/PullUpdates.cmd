@@ -39,15 +39,15 @@ SET QUIET_FLAG=/Q
 echo %~dp0 %BASE_FOLDER% %GIT_TEMP%
 if /I NOT "%~dp0"=="%GIT_TEMP%" (
     echo Copying To Temp Location... %BASE_FOLDER% to %GIT_TEMP%
-    echo f | xcopy /FY %BASE_FOLDER%PullUpdates.cmd %GIT_TEMP%PullUpdates.cmd 1>NUL 2>NUL
+    echo f | xcopy /FY "%BASE_FOLDER%PullUpdates.cmd" "%GIT_TEMP%PullUpdates.cmd" 1>NUL 2>NUL
     rem Copy git files over to temp folder
-    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%bin\* %GIT_TEMP%bin\
-    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%cmd\* %GIT_TEMP%cmd\
-    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%dev\* %GIT_TEMP%dev\
-    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%mingw64\* %GIT_TEMP%mingw64\
-    xcopy /ECIHRKY %QUIET_FLAG% %BASE_FOLDER%usr\* %GIT_TEMP%usr\
+    xcopy /ECIHRKY %QUIET_FLAG% "%BASE_FOLDER%bin\*" "%GIT_TEMP%bin\"
+    xcopy /ECIHRKY %QUIET_FLAG% "%BASE_FOLDER%cmd\*" "%GIT_TEMP%cmd\"
+    xcopy /ECIHRKY %QUIET_FLAG% "%BASE_FOLDER%dev\*" "%GIT_TEMP%dev\"
+    xcopy /ECIHRKY %QUIET_FLAG% "%BASE_FOLDER%mingw64\*" "%GIT_TEMP%mingw64\"
+    xcopy /ECIHRKY %QUIET_FLAG% "%BASE_FOLDER%usr\*" "%GIT_TEMP%usr\"
     rem Relaunch from temp folder
-    call %GIT_TEMP%PullUpdates.cmd %GIT_BRANCH% %BASE_FOLDER%
+    call "%GIT_TEMP%PullUpdates.cmd" "%GIT_BRANCH%" "%BASE_FOLDER%"
     exit /b 0
 ) else (
     echo running from tmp folder, target: %BASE_FOLDER%
@@ -55,10 +55,10 @@ if /I NOT "%~dp0"=="%GIT_TEMP%" (
 
 
 rem echo %~dp0
-chdir %BASE_FOLDER%\..
+chdir "%BASE_FOLDER%\.."
 set PROJECT_PATH=%CD%
 echo %PROJECT_PATH%
-cd %BASE_FOLDER%
+cd "%BASE_FOLDER%"
 
 
 echo %ESC_GREEN%Killing OPE_LMS app if running...%ESC_RESET%
@@ -81,13 +81,13 @@ if EXIST %PROJECT_PATH%/.git (
 echo %ESC_GREEN%Updating Laptop Binaries to the latest update...%ESC_RESET%
 
 rem Add the online origin
-%GIT_PATH% -C "%PROJECT_PATH%" remote remove ope_origin >> nul 2>&1
-%GIT_PATH% -C "%PROJECT_PATH%" remote add ope_origin https://github.com/operepo/ope_laptop_binaries.git 
+"%GIT_PATH%" -C "%PROJECT_PATH%" remote remove ope_origin >> nul 2>&1
+"%GIT_PATH%" -C "%PROJECT_PATH%" remote add ope_origin https://github.com/operepo/ope_laptop_binaries.git 
 rem >> nul 2>&1
 
 rem Add the offline origin
-%GIT_PATH% -C "%PROJECT_PATH%" remote remove ope_smc_origin >> nul 2>&1
-%GIT_PATH% -C "%PROJECT_PATH%" remote add ope_smc_origin git://smc.ed/ope_laptop_binaries.git >> nul 2>&1
+"%GIT_PATH%" -C "%PROJECT_PATH%" remote remove ope_smc_origin >> nul 2>&1
+"%GIT_PATH%" -C "%PROJECT_PATH%" remote add ope_smc_origin git://smc.ed/ope_laptop_binaries.git >> nul 2>&1
 
 rem Which origin were we able to pull from?
 SET PULL_ORIGIN=ope_origin
@@ -95,7 +95,7 @@ SET PULL_ORIGIN=ope_origin
 rem Try to pull the online origin
 echo %ESC_GREEN%trying online git pull...%ESC_RESET%
 rem stash save just in case
-%GIT_PATH% -C "%PROJECT_PATH%" fetch --depth=1 -uf !PULL_ORIGIN! %GIT_BRANCH% 
+"%GIT_PATH%" -C "%PROJECT_PATH%" fetch --depth=1 -uf !PULL_ORIGIN! %GIT_BRANCH% 
 rem >> nul 2>&1
 
 if !ERRORLEVEL! NEQ 0 (
@@ -107,7 +107,7 @@ if !ERRORLEVEL! NEQ 0 (
     
     SET PULL_ORIGIN=ope_smc_origin
     rem %GIT_PATH% pull !PULL_ORIGIN! %GIT_BRANCH% >> nul 2>&1
-    %GIT_PATH% -C "%PROJECT_PATH%" fetch --depth=1 -uf !PULL_ORIGIN! %GIT_BRANCH% 
+    "%GIT_PATH%" -C "%PROJECT_PATH%" fetch --depth=1 -uf !PULL_ORIGIN! %GIT_BRANCH% 
     rem >> nul 2>&1
 
     
@@ -129,17 +129,17 @@ if !ERRORLEVEL! NEQ 0 (
 rem Force us to the current HEAD (force us to update)
 echo %ESC_GREEN%Checking out changes...%ESC_RESET%
 rem Remove current master branch
-%GIT_PATH% -C "%PROJECT_PATH%" branch -d !PULL_ORIGIN!/%GIT_BRANCH%  1>NUL 2>NUL
+"%GIT_PATH%" -C "%PROJECT_PATH%" branch -d !PULL_ORIGIN!/%GIT_BRANCH%  1>NUL 2>NUL
 rem Kill local changes
 rem %GIT_PATH% -C "%PROJECT_PATH%" checkout *
-%GIT_PATH% -C "%PROJECT_PATH%" checkout -f -B %GIT_BRANCH% !PULL_ORIGIN!/%GIT_BRANCH%
+"%GIT_PATH%" -C "%PROJECT_PATH%" checkout -f -B %GIT_BRANCH% !PULL_ORIGIN!/%GIT_BRANCH%
 rem >> nul 2>&1
 rem Reset to current HEAD
-%GIT_PATH% -C "%PROJECT_PATH%" reset --hard !PULL_ORIGIN!/%GIT_BRANCH%
+"%GIT_PATH%" -C "%PROJECT_PATH%" reset --hard !PULL_ORIGIN!/%GIT_BRANCH%
 rem Delete local changed files
 rem %GIT_PATH% -C "%PROJECT_PATH%" clean -fdx
 rem Checkout current files
-%GIT_PATH% -C "%PROJECT_PATH%" checkout -f -B %GIT_BRANCH% !PULL_ORIGIN!/%GIT_BRANCH%
+"%GIT_PATH%" -C "%PROJECT_PATH%" checkout -f -B %GIT_BRANCH% !PULL_ORIGIN!/%GIT_BRANCH%
 
 if !ERRORLEVEL! NEQ 0 (
     echo.
@@ -152,6 +152,6 @@ if !ERRORLEVEL! NEQ 0 (
 )
 
 rem Show current rev
-%GIT_PATH% -C "%PROJECT_PATH%" rev-parse HEAD
+"%GIT_PATH%" -C "%PROJECT_PATH%" rev-parse HEAD
 
 exit /b 0

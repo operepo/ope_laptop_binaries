@@ -20,7 +20,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x64_2005.exe /q
+ call "%~dp0vcredist_x64_2005.exe" /q
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -32,7 +32,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x86_2005.exe /q
+ call "%~dp0vcredist_x86_2005.exe" /q
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -50,7 +50,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x64_2008.exe /q
+ call "%~dp0vcredist_x64_2008.exe" /q
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -63,7 +63,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x86_2008.exe /q
+ call "%~dp0vcredist_x86_2008.exe" /q
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -77,7 +77,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x64_2010.exe /q /norestart
+ call "%~dp0vcredist_x64_2010.exe" /q /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -89,7 +89,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x86_2010.exe /q /norestart
+ call "%~dp0vcredist_x86_2010.exe" /q /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -105,7 +105,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x64_2012.exe /install /quiet /norestart
+ call "%~dp0vcredist_x64_2012.exe" /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -117,7 +117,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x86_2012.exe /install /quiet /norestart
+ call "%~dp0vcredist_x86_2012.exe" /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -134,7 +134,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x64_2013.exe /install /quiet /norestart
+ call "%~dp0vcredist_x64_2013.exe" /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -147,7 +147,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vcredist_x86_2013.exe /install /quiet /norestart
+ call "%~dp0vcredist_x86_2013.exe" /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -162,7 +162,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vc_redist.x64_15_to_19.exe /install /quiet /norestart
+ call "%~dp0vc_redist.x64_15_to_19.exe" /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
@@ -174,7 +174,7 @@ echo !MSG!
 reg query "!REG_KEY!" >> nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
  echo %ESC_RED%    - !MSVC_VERSION! not installed, installing now...%ESC_RESET%
- call %~dp0vc_redist.x86_15_to_19.exe /install /quiet /norestart
+ call "%~dp0vc_redist.x86_15_to_19.exe" /install /quiet /norestart
 ) else (
  echo %ESC_GREEN%    - !MSVC_VERSION! already installed.%ESC_RESET%
 )
