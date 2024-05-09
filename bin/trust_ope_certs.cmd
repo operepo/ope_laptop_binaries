@@ -12,7 +12,7 @@ rem download and install the certs
 echo %ESC_GREEN%Downloading Fog certs...%ESC_RESET%
 
 
-%~dp0wget.exe --connect-timeout=6 --tries=3 --no-check-certificate -O %~dp0ca.crt https://gateway.ed/ca.crt  2>NUL 1>NUL
+"%~dp0wget.exe" --connect-timeout=6 --tries=3 --no-check-certificate -O %~dp0ca.crt https://gateway.ed/ca.crt  2>NUL 1>NUL
 
 if %ERRORLEVEL% == 0 (
     echo %ESC_GREEN%  Certs downloaded!%ESC_RESET%
@@ -32,7 +32,7 @@ REM remove old certs
 rem %~dp0certmgr.exe -del -c -n "ed" -s -r localMachine Root
 
 REM add current cert
-%~dp0certmgr.exe -add %~dp0ca.crt  -c -s -r localMachine root  2>NUL 1>NUL
+"%~dp0certmgr.exe" -add %~dp0ca.crt  -c -s -r localMachine root  2>NUL 1>NUL
 
 if %ERRORLEVEL% == 0 (
     echo %ESC_GREEN%  Success! OPE Certs installed%ESC_RESET%

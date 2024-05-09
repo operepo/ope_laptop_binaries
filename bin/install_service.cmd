@@ -20,7 +20,7 @@ rem Add win defender exclusion for our ope folder
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& {Add-MpPreference -ExclusionPath '%PROGRAMDATA%\ope'}"
 
 echo %ESC_GREEN%UnRegistering OPEService...%ESC_RESET%
-%programdata%\ope\Services\OPEService\OPEService.exe remove
+"%programdata%\ope\Services\OPEService\OPEService.exe" remove
 rem if %ERRORLEVEL% NEQ 0 (
 rem     echo.
 rem     echo %ESC_RED%ERROR UnRegistering OPE Service! - Something wen't VERY wrong. %ESC_RESET%
@@ -39,10 +39,10 @@ SET QUIET_FLAG=/Q
 if exist OPEService.py (
     rem /Q instead of F
     echo -- Copying %~dp0\dist\ to %programdata%\ope\Services\
-    xcopy /ECIHRKY %QUIET_FLAG% %~dp0\dist\* %programdata%\ope\Services\ 
+    xcopy /ECIHRKY %QUIET_FLAG% "%~dp0\dist\*" "%programdata%\ope\Services\" 
 ) else (
     echo -- Copying %~dp0\..\Services\ to %programdata%\ope\Services\
-    xcopy /ECIHRKY %QUIET_FLAG% %~dp0\..\Services\* %programdata%\ope\Services\
+    xcopy /ECIHRKY %QUIET_FLAG% "%~dp0\..\Services\*" "%programdata%\ope\Services\"
     
 )
 
@@ -57,13 +57,13 @@ rem Install the service - ensure it is installed w the proper settings
 rem --startup
 echo %ESC_GREEN%Registering OPEService...%ESC_RESET%
 rem --interactive
-%programdata%\ope\Services\OPEService\OPEService.exe install
+"%programdata%\ope\Services\OPEService\OPEService.exe" install
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo %ESC_RED%ERROR Registering OPE Service! - Something wen't VERY wrong. %ESC_RESET%
     echo.
     echo %ESC_YELLOW%Running Bad Credential Fallback%ESC_RESET%
-    call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    call "%programdata%\ope\Services\mgmt\mgmt.exe" bad_credential
     exit /B 2
 )
 
@@ -81,7 +81,7 @@ if %ERRORLEVEL% NEQ 0 (
     echo %ESC_RED%ERROR Starting OPE Service! - Something wen't VERY wrong. %ESC_RESET%
     echo.
     echo %ESC_YELLOW%Running Bad Credential Fallback%ESC_RESET%
-    call %programdata%\ope\Services\mgmt\mgmt.exe bad_credential
+    call "%programdata%\ope\Services\mgmt\mgmt.exe" bad_credential
     exit /B 2
 )
 
