@@ -27,6 +27,29 @@ if [%2] EQU [] (
     SET BASE_FOLDER=%2
 )
 
+REM Define the registry key and value name
+set "key=HKLM\Software\Ope"
+set "value=smc_url"
+REM Query the registry and store the result in a variable
+for /f "tokens=2*" %%A in ('reg query "%key%" /v "%value%" 2^>nul') do (
+    set "reg_value=%%B"
+)
+
+REM Check if the variable is set (i.e., the value was found)
+if defined reg_value (
+    rem echo The registry value is: %reg_value%
+) else (
+    rem echo Registry value not found.
+	set "reg_value=https://smc.ed"
+)
+
+REM Replace "https" with "git"
+set SMC_GIT=%reg_value:https=git%
+rem set "new_string=%original_string:foo=bar%"
+
+echo Using SMC URL: %SMC_GIT%
+
+
 rem Need to copy git files to a temp location
 set GIT_TEMP=%windir%\Temp\Git\
 set GIT_PATH=%GIT_TEMP%bin\git.exe
@@ -87,7 +110,7 @@ rem >> nul 2>&1
 
 rem Add the offline origin
 "%GIT_PATH%" -C "%PROJECT_PATH%" remote remove ope_smc_origin >> nul 2>&1
-"%GIT_PATH%" -C "%PROJECT_PATH%" remote add ope_smc_origin git://smc.ed/ope_laptop_binaries.git >> nul 2>&1
+"%GIT_PATH%" -C "%PROJECT_PATH%" remote add ope_smc_origin %SMC_GIT%/ope_laptop_binaries.git >> nul 2>&1
 
 rem Which origin were we able to pull from?
 SET PULL_ORIGIN=ope_origin
