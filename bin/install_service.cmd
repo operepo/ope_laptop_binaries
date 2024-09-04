@@ -72,6 +72,7 @@ rem Set service recovery options
 rem SC qfailure %SERVICE_NAME%
 rem SC failure %SERVICE_NAME% reset=0 actions=restart/60000/restart/60000/run/1000
 SC failure %SERVICE_NAME% reset=0 actions=restart/60000/restart/60000/reboot/1000  >> nul 2>&1
+sc config "%SERVICE_NAME%" start=auto
 rem sc failure %SERVICE_NAME% command= ""C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" "C:\AT\MyPowerShellScript.ps1" "possibleArguments""
 
 echo %ESC_GREEN%Starting OPEService...%ESC_RESET%
