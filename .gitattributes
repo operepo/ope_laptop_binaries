@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8f6f594543f8c536ad05f3028a32fd409da6b59f
 # Deal with linefeed issues on checkin/checkout
 *.sh text eol=lf
 *.py text=auto
 *.kv text=auto
+<<<<<<< HEAD
+=======
+*.dll filter=lfs diff=lfs merge=lfs -text
+>>>>>>> 8f6f594543f8c536ad05f3028a32fd409da6b59f
